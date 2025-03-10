@@ -308,95 +308,114 @@ countrySelect.addEventListener("change", function () {
         });
     }
 });
-    // Load stored profile data from sessionStorage
-    document.addEventListener("DOMContentLoaded", () => {
-        const loggedInUser = JSON.parse(sessionStorage.getItem("loggedInLeader"));
+    // Firebase Configuration (Ensure Firebase is initialized in your project)
+const db = firebase.firestore();
+const storage = firebase.storage();
 
-        if (loggedInUser) {
-            document.getElementById("profilePic").src = loggedInUser.profileImage || "default-profile.png";
-            document.getElementById("name").value = loggedInUser.name || "";
-            document.getElementById("country").value = loggedInUser.country || "";
-            document.getElementById("state").value = loggedInUser.state || "";
-            document.getElementById("title").value = loggedInUser.title || "";
-            document.getElementById("email").value = loggedInUser.email || "";
-            document.getElementById("phone").value = loggedInUser.phone || "";
+// Load profile data from Firestore
+document.addEventListener("DOMContentLoaded", () => {
+    const loggedInUser = JSON.parse(sessionStorage.getItem("loggedInLeader"));
 
-            // Display in dashboard section
-            document.getElementById("dashProfilePic").src = loggedInUser.profileImage || "default-profile.png";
-            document.getElementById("dashName").textContent = loggedInUser.name || "N/A";
-            document.getElementById("dashCountry").textContent = loggedInUser.country || "N/A";
-            document.getElementById("dashState").textContent = loggedInUser.state || "N/A";
-            document.getElementById("dashTitle").textContent = loggedInUser.title || "N/A";
-            document.getElementById("dashEmail").textContent = loggedInUser.email || "N/A";
-            document.getElementById("dashPhone").textContent = loggedInUser.phone || "N/A";
+    if (!loggedInUser) {
+        alert("No user logged in! Redirecting to login...");
+        window.location.href = "login.html";
+        return;
+    }
+
+    const userRef = db.collection("leaders").doc(loggedInUser.email);
+
+    // Real-time listener to update profile automatically
+    userRef.onSnapshot((doc) => {
+        if (doc.exists) {
+            const userData = doc.data();
+            
+            document.getElementById("profilePic").src = userData.profileImage || "default-profile.png";
+            document.getElementById("name").value = userData.name || "";
+            document.getElementById("country").value = userData.country || "";
+            document.getElementById("state").value = userData.state || "";
+            document.getElementById("title").value = userData.title || "";
+            document.getElementById("email").value = userData.email || "";
+            document.getElementById("phone").value = userData.phone || "";
+
+            // Update dashboard
+            document.getElementById("dashProfilePic").src = userData.profileImage || "default-profile.png";
+            document.getElementById("dashName").textContent = userData.name || "N/A";
+            document.getElementById("dashCountry").textContent = userData.country || "N/A";
+            document.getElementById("dashState").textContent = userData.state || "N/A";
+            document.getElementById("dashTitle").textContent = userData.title || "N/A";
+            document.getElementById("dashEmail").textContent = userData.email || "N/A";
+            document.getElementById("dashPhone").textContent = userData.phone || "N/A";
+
+            // Store updated user data in sessionStorage
+            sessionStorage.setItem("loggedInLeader", JSON.stringify(userData));
         } else {
-            alert("No user logged in! Redirecting to login...");
+            alert("User profile not found! Redirecting...");
             window.location.href = "login.html";
         }
     });
+});
 
-    // Handle profile picture upload
-    document.getElementById("uploadPhoto").addEventListener("change", function () {
-        const reader = new FileReader();
-        reader.onload = function (event) {
-            document.getElementById("profilePic").src = event.target.result;
-            saveProfile(); // Auto-save photo
-        };
-        reader.readAsDataURL(this.files[0]);
-    });
+// Handle profile picture upload
+document.getElementById("uploadPhoto").addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
 
-    // Save profile changes
-    document.getElementById("profileForm").addEventListener("submit", function (event) {
-        event.preventDefault();
-        saveProfile();
-        alert("Profile updated successfully!");
-    });
+    const loggedInUser = JSON.parse(sessionStorage.getItem("loggedInLeader"));
+    const storageRef = storage.ref(`profile_pictures/${loggedInUser.email}`);
 
-    function saveProfile() {
-        let loggedInUser = JSON.parse(sessionStorage.getItem("loggedInLeader"));
+    const uploadTask = storageRef.put(file);
 
-        if (!loggedInUser) {
-            alert("Error: No user data found. Please log in again.");
-            return;
+    uploadTask.on(
+        "state_changed",
+        null,
+        (error) => alert("Upload failed: " + error),
+        () => {
+            uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                document.getElementById("profilePic").src = downloadURL;
+                saveProfile(downloadURL); // Auto-save photo
+            });
         }
+    );
+});
 
-        // Update the logged-in user's data
-        loggedInUser.profileImage = document.getElementById("profilePic").src;
-        loggedInUser.name = document.getElementById("name").value;
-        loggedInUser.country = document.getElementById("country").value;
-        loggedInUser.state = document.getElementById("state").value;
-        loggedInUser.title = document.getElementById("title").value;
-        loggedInUser.email = document.getElementById("email").value;
-        loggedInUser.phone = document.getElementById("phone").value;
+// Save profile changes
+document.getElementById("profileForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+    saveProfile();
+    alert("Profile updated successfully!");
+});
 
-        // Update the user list in localStorage
-        let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
-        let userIndex = approvedLeaders.findIndex(user => user.email === loggedInUser.email);
+function saveProfile(profileImageURL = null) {
+    let loggedInUser = JSON.parse(sessionStorage.getItem("loggedInLeader"));
 
-        if (userIndex !== -1) {
-            approvedLeaders[userIndex] = loggedInUser;
-            localStorage.setItem("approvedLeaders", JSON.stringify(approvedLeaders));
-        }
-
-        // Save updated logged-in user data
-        sessionStorage.setItem("loggedInLeader", JSON.stringify(loggedInUser));
-
-        // Update dashboard details instantly
-        document.getElementById("dashProfilePic").src = loggedInUser.profileImage || "default-profile.png";
-        document.getElementById("dashName").textContent = loggedInUser.name || "N/A";
-        document.getElementById("dashCountry").textContent = loggedInUser.country || "N/A";
-        document.getElementById("dashState").textContent = loggedInUser.state || "N/A";
-        document.getElementById("dashTitle").textContent = loggedInUser.title || "N/A";
-        document.getElementById("dashEmail").textContent = loggedInUser.email || "N/A";
-        document.getElementById("dashPhone").textContent = loggedInUser.phone || "N/A";
+    if (!loggedInUser) {
+        alert("Error: No user data found. Please log in again.");
+        return;
     }
 
-    // Logout Function
-    document.getElementById("logoutBtn").addEventListener("click", function () {
-        sessionStorage.removeItem("loggedInLeader"); // Correct logout key
-        alert("Logged out successfully!");
-        window.location.href = "login.html";
-    });
+    const updatedUserData = {
+        profileImage: profileImageURL || document.getElementById("profilePic").src,
+        name: document.getElementById("name").value,
+        country: document.getElementById("country").value,
+        state: document.getElementById("state").value,
+        title: document.getElementById("title").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value,
+    };
+
+    // Update Firestore
+    db.collection("leaders").doc(loggedInUser.email).set(updatedUserData, { merge: true });
+
+    // Update sessionStorage
+    sessionStorage.setItem("loggedInLeader", JSON.stringify(updatedUserData));
+}
+
+// Logout Function
+document.getElementById("logoutBtn").addEventListener("click", function () {
+    sessionStorage.removeItem("loggedInLeader");
+    alert("Logged out successfully!");
+    window.location.href = "login.html";
+});
 
     </script>
     

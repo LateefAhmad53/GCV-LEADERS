@@ -133,11 +133,11 @@
 
     <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Ensure localStorage has approved leaders data
-        if (!localStorage.getItem("approvedLeaders")) {
-            localStorage.setItem("approvedLeaders", JSON.stringify([]));
-        }
-    });
+    // Ensure Firebase is initialized
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
 
     document.getElementById("loginForm").addEventListener("submit", function (e) {
         e.preventDefault();
@@ -163,43 +163,56 @@
             return;
         }
 
-        // Retrieve approved leaders from localStorage
-        let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
+        // Retrieve the leader from Firestore where status = "approved"
+        db.collection("leaders")
+            .where("email", "==", email)
+            .where("status", "==", "approved") // Ensure only approved leaders can log in
+            .get()
+            .then((querySnapshot) => {
+                if (querySnapshot.empty) {
+                    alert("No approved leader found with this email!");
+                    return;
+                }
 
-        if (approvedLeaders.length === 0) {
-            alert("No registered leaders found! Please sign up first.");
-            return;
-        }
+                let leader;
+                querySnapshot.forEach((doc) => {
+                    leader = doc.data();
+                });
 
-        // Check if leader exists (password verification)
-        let leader = approvedLeaders.find(l => l.email === email && l.password === password);
+                // Verify password
+                if (leader.password !== password) {
+                    alert("Invalid Gmail or Password!");
+                    return;
+                }
 
-        if (!leader) {
-            alert("Invalid Gmail or Password!");
-            return;
-        }
+                // Store only necessary data in sessionStorage
+                sessionStorage.setItem("loggedInLeader", JSON.stringify({
+                    name: leader.name,
+                    email: leader.email,
+                    title: leader.title,
+                    country: leader.country,
+                    state: leader.state,
+                    phone: leader.phone,
+                    profileImage: leader.profileImage || "default-avatar.png",
+                }));
 
-        // Store only necessary data in sessionStorage (to avoid overloading localStorage)
-        sessionStorage.setItem("loggedInLeader", JSON.stringify({
-            name: leader.name,
-            email: leader.email,
-            title: leader.title,
-            country: leader.country,
-            state: leader.state,
-            phone: leader.phone,
-            profileImage: leader.profileImage || "default-avatar.png",
-        }));
+                // Show success animation
+                loginBtn.innerHTML = "✔️ Logging in...";
+                loginBtn.style.background = "#28a745";
+                loginBtn.style.animation = "pulse 0.5s infinite alternate";
 
-        // Show success animation
-        loginBtn.innerHTML = "✔️ Logging in...";
-        loginBtn.style.background = "#28a745";
-        loginBtn.style.animation = "pulse 0.5s infinite alternate";
-
-        setTimeout(() => {
-            alert("Login Successful! Redirecting...");
-            window.location.href = "profile.html"; // Redirect to leader's dashboard
-        }, 1000);
+                setTimeout(() => {
+                    alert("Login Successful! Redirecting...");
+                    window.location.href = "profile.html"; // Redirect to leader's dashboard
+                }, 1000);
+            })
+            .catch((error) => {
+                console.error("Error logging in:", error);
+                alert("Login failed! Please try again.");
+            });
     });
+});
+
 </script>
 
 </body>

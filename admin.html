@@ -587,269 +587,197 @@ footer {
             });
         });
 
-        document.addEventListener("DOMContentLoaded", function () {
-    checkAdminLogin();
-    loadLeaders();
-});
+        // Initialize Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyDFNAifDyYbmSqr98kr1Yg8CZ2hrpem8zY",
+    authDomain: "gcv-leaders.firebaseapp.com",
+    projectId: "gcv-leaders",
+    storageBucket: "gcv-leaders.firebasestorage.app",
+    messagingSenderId: "433078868983",
+    appId: "1:433078868983:web:c3b626f0d6bd30f6f96cf2",
+    measurementId: "G-Z5T5LSNEG1"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
 
 // Check if admin is logged in
-function checkAdminLogin() {
-    let adminData = JSON.parse(localStorage.getItem("adminData"));
-    if (!adminData || !adminData.loggedIn) {
+auth.onAuthStateChanged((user) => {
+    if (!user) {
         alert("Unauthorized access! Please log in as an admin.");
         window.location.href = "admin-register.html";
+    } else {
+        loadLeaders();
+        loadAdminDashboard();
     }
-}
+});
 
-// Load leaders from localStorage
+// Load leaders from Firestore
 function loadLeaders() {
-    let leaders = JSON.parse(localStorage.getItem("leaders")) || [];
-    let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
-
-    // Ensure each leader has a valid profile photo or fallback to default
-    leaders = leaders.map(leader => ({
-        ...leader,
-        profileImage: leader.profileImage ? leader.profileImage : "default-profile.png"
-    }));
-
-    approvedLeaders = approvedLeaders.map(leader => ({
-        ...leader,
-        profileImage: leader.profileImage ? leader.profileImage : "default-profile.png"
-    }));
-
-    displayLeaders(leaders, approvedLeaders);
-}
-
-// Approve a leader (Moves from 'leaders' to 'approvedLeaders')
-function approveLeader(index) {
-    let leaders = JSON.parse(localStorage.getItem("leaders")) || [];
-    let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
-
-    // Move the selected leader to the approved list
-    let leader = leaders.splice(index, 1)[0]; 
-    approvedLeaders.push(leader); 
-
-    // Save changes to localStorage
-    localStorage.setItem("leaders", JSON.stringify(leaders));
-    localStorage.setItem("approvedLeaders", JSON.stringify(approvedLeaders));
-
-    // Reload leaders to update display
-    loadLeaders();
-}
-
-// Display pending and approved leaders
-function displayLeaders(pendingLeaders, approvedLeaders) {
     const pendingDiv = document.getElementById("pendingLeaders");
     const approvedDiv = document.getElementById("approvedLeaders");
 
     pendingDiv.innerHTML = "";
     approvedDiv.innerHTML = "";
 
-    // Display Pending Leaders
-    pendingLeaders.forEach((leader, index) => {
-        pendingDiv.innerHTML += `
-            <div class="leader-item">
-                <img src="${leader.profileImage}" 
-                     alt="${leader.name}" class="leader-photo">
-                <h3>${leader.name} (${leader.title})</h3>
-                <p>📍 ${leader.country}, ${leader.state}</p>
-                <p>📧 ${leader.email}</p>
-                <p>📞 ${leader.phone}</p>
-                <button class="approve-btn" onclick="approveLeader(${index})">✅ Approve</button>
-                <button class="delete-btn" onclick="deleteLeader(${index}, 'pending')">❌ Delete</button>
-            </div>`;
+    db.collection("leaders").where("approved", "==", false).get().then(snapshot => {
+        snapshot.forEach(doc => {
+            let leader = doc.data();
+            pendingDiv.innerHTML += `
+                <div class="leader-item">
+                    <img src="${leader.profileImage || "default-profile.png"}" alt="${leader.name}" class="leader-photo">
+                    <h3>${leader.name} (${leader.title})</h3>
+                    <p>📍 ${leader.country}, ${leader.state}</p>
+                    <p>📧 ${leader.email}</p>
+                    <p>📞 ${leader.phone}</p>
+                    <button class="approve-btn" onclick="approveLeader('${doc.id}')">✅ Approve</button>
+                    <button class="delete-btn" onclick="deleteLeader('${doc.id}')">❌ Delete</button>
+                </div>`;
+        });
     });
 
-    // Display Approved Leaders
-    approvedLeaders.forEach((leader, index) => {
-        approvedDiv.innerHTML += `
-            <div class="leader-item">
-                <img src="${leader.profileImage}" 
-                     alt="${leader.name}" class="leader-photo" id="leaderPhoto${index}">
-                <h3>${leader.name} (${leader.title})</h3>
-                <p>📍 ${leader.country}, ${leader.state}</p>
-                <p>📧 ${leader.email}</p>
-                <p>📞 ${leader.phone}</p>
-                <input type="file" id="photoUpload${index}" class="photo-upload" accept="image/*" 
-                       onchange="updateLeaderPhoto(event, ${index})">
-                <button class="edit-btn" onclick="editLeader(${index})">✏️ Edit</button>
-                <button class="delete-btn" onclick="deleteLeader(${index}, 'approved')">❌ Delete</button>
-            </div>`;
+    db.collection("leaders").where("approved", "==", true).get().then(snapshot => {
+        snapshot.forEach(doc => {
+            let leader = doc.data();
+            approvedDiv.innerHTML += `
+                <div class="leader-item">
+                    <img src="${leader.profileImage || "default-profile.png"}" alt="${leader.name}" class="leader-photo" id="leaderPhoto${doc.id}">
+                    <h3>${leader.name} (${leader.title})</h3>
+                    <p>📍 ${leader.country}, ${leader.state}</p>
+                    <p>📧 ${leader.email}</p>
+                    <p>📞 ${leader.phone}</p>
+                    <input type="file" id="photoUpload${doc.id}" class="photo-upload" accept="image/*" onchange="updateLeaderPhoto(event, '${doc.id}')">
+                    <button class="edit-btn" onclick="editLeader('${doc.id}')">✏️ Edit</button>
+                    <button class="delete-btn" onclick="deleteLeader('${doc.id}')">❌ Delete</button>
+                </div>`;
+        });
     });
 }
 
-// Function to update leader photo
-function updateLeaderPhoto(event, index) {
+// Approve a leader
+function approveLeader(leaderId) {
+    db.collection("leaders").doc(leaderId).update({
+        approved: true
+    }).then(() => {
+        alert("Leader approved successfully!");
+        loadLeaders();
+    }).catch(error => {
+        console.error("Error approving leader: ", error);
+    });
+}
+
+// Delete leader
+function deleteLeader(leaderId) {
+    db.collection("leaders").doc(leaderId).delete().then(() => {
+        alert("Leader deleted successfully!");
+        loadLeaders();
+    }).catch(error => {
+        console.error("Error deleting leader: ", error);
+    });
+}
+
+// Update leader's photo
+function updateLeaderPhoto(event, leaderId) {
     const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
-            approvedLeaders[index].profileImage = e.target.result; // Save new photo
-            localStorage.setItem("approvedLeaders", JSON.stringify(approvedLeaders));
-            document.getElementById(`leaderPhoto${index}`).src = e.target.result; // Update UI
-        };
-        reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    const storageRef = firebase.storage().ref(`leader_photos/${leaderId}`);
+    storageRef.put(file).then(snapshot => {
+        return snapshot.ref.getDownloadURL();
+    }).then(url => {
+        return db.collection("leaders").doc(leaderId).update({ profileImage: url });
+    }).then(() => {
+        document.getElementById(`leaderPhoto${leaderId}`).src = url;
+        alert("Profile photo updated!");
+    }).catch(error => {
+        console.error("Error updating photo: ", error);
+    });
 }
 
-// Delete leader from pending or approved list
-function deleteLeader(index, type) {
-    let leaders = JSON.parse(localStorage.getItem("leaders")) || [];
-    let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
+// Edit a leader's details
+function editLeader(leaderId) {
+    db.collection("leaders").doc(leaderId).get().then(doc => {
+        if (!doc.exists) return;
 
-    if (type === 'pending') {
-        leaders.splice(index, 1);
-        localStorage.setItem("leaders", JSON.stringify(leaders));
-    } else {
-        approvedLeaders.splice(index, 1);
-        localStorage.setItem("approvedLeaders", JSON.stringify(approvedLeaders));
-    }
+        let leader = doc.data();
+        let newName = prompt("Enter new name:", leader.name);
+        let newCountry = prompt("Enter new country:", leader.country);
+        let newState = prompt("Enter new state:", leader.state);
+        let newTitle = prompt("Enter new title:", leader.title);
+        let newEmail = prompt("Enter new email:", leader.email);
+        let newPhone = prompt("Enter new phone number:", leader.phone);
 
-    // Reload leaders after deletion
-    loadLeaders();
-}
-
-// Load leaders on page load
-loadLeaders();
-
-
-// Edit a leader's details (Now includes photo update)
-function editLeader(index) {
-    let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
-    let leader = approvedLeaders[index];
-
-    let newName = prompt("Enter new name:", leader.name);
-    let newCountry = prompt("Enter new country:", leader.country);
-    let newState = prompt("Enter new state:", leader.state);
-    let newTitle = prompt("Enter new title:", leader.title);
-    let newEmail = prompt("Enter new email:", leader.email);
-    let newPhone = prompt("Enter new phone number:", leader.phone);
-
-    if (newName && newCountry && newState && newTitle && newEmail && newPhone) {
-        approvedLeaders[index] = {
-            name: newName,
-            country: newCountry,
-            state: newState,
-            title: newTitle,
-            email: newEmail,
-            phone: newPhone,
-            photo: leader.photo // Keep existing photo if not updated
-        };
-        localStorage.setItem("approvedLeaders", JSON.stringify(approvedLeaders));
-        displayLeaders(JSON.parse(localStorage.getItem("leaders")) || [], approvedLeaders);
-    } else {
-        alert("All fields are required!");
-    }
-}
-
-// Delete a leader
-function deleteLeader(index, type) {
-    let leaders = JSON.parse(localStorage.getItem("leaders")) || [];
-    let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
-
-    if (type === "pending") {
-        leaders.splice(index, 1);
-        localStorage.setItem("leaders", JSON.stringify(leaders));
-    } else {
-        approvedLeaders.splice(index, 1);
-        localStorage.setItem("approvedLeaders", JSON.stringify(approvedLeaders));
-    }
-
-    displayLeaders(leaders, approvedLeaders);
+        if (newName && newCountry && newState && newTitle && newEmail && newPhone) {
+            db.collection("leaders").doc(leaderId).update({
+                name: newName,
+                country: newCountry,
+                state: newState,
+                title: newTitle,
+                email: newEmail,
+                phone: newPhone
+            }).then(() => {
+                alert("Leader details updated!");
+                loadLeaders();
+            }).catch(error => {
+                console.error("Error updating leader: ", error);
+            });
+        } else {
+            alert("All fields are required!");
+        }
+    });
 }
 
 // Logout admin
 function logoutAdmin() {
-    let adminData = JSON.parse(localStorage.getItem("adminData"));
-    if (adminData) {
-        adminData.loggedIn = false;
-        localStorage.setItem("adminData", JSON.stringify(adminData));
-    }
-    alert("Logged out successfully!");
-    window.location.href = "admin-register.html";
+    auth.signOut().then(() => {
+        alert("Logged out successfully!");
+        window.location.href = "admin-register.html";
+    });
 }
 
-// Function to Load Admin Dashboard Data
+// Load Admin Dashboard Data
 function loadAdminDashboard() {
-    const leaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
-    let storedAdmin = localStorage.getItem("adminData");
+    db.collection("leaders").where("approved", "==", true).get().then(snapshot => {
+        document.getElementById("totalLeaders").innerText = snapshot.size;
+    });
 
-    // Update statistics
-    document.getElementById("totalLeaders").innerText = leaders.length;
+    const user = auth.currentUser;
+    if (!user) return;
 
-    // Check if admin data exists
-    if (!storedAdmin) {
-        alert("No admin registered. Please register first.");
-        document.getElementById("totalAdmins").innerText = "0"; // Set admin count to 0
-        return;
-    }
+    db.collection("admins").doc(user.uid).get().then(doc => {
+        if (!doc.exists) return;
 
-    storedAdmin = JSON.parse(storedAdmin);
+        let adminData = doc.data();
+        document.getElementById("totalAdmins").innerText = "1";
+        document.getElementById("adminName").innerText = adminData.name || "Admin";
+        document.getElementById("adminEmail").innerText = adminData.email;
+        document.getElementById("adminRegistered").innerText = adminData.registeredDate || "N/A";
+    });
 
-    // Ensure only one admin login is allowed
-    if (!storedAdmin.loggedIn) {
-        alert("No admin is logged in.");
-        window.location.href = "login.html"; // Redirect if no admin is logged in
-        return;
-    }
-
-    document.getElementById("totalAdmins").innerText = "1"; // Always 1 logged-in admin
-
-    // Ensure the registered date exists
-    if (!storedAdmin.registeredDate) {
-        storedAdmin.registeredDate = new Date().toISOString().split('T')[0]; // Set if missing
-        localStorage.setItem("adminData", JSON.stringify(storedAdmin)); // Save update
-    }
-
-    // Populate the Leaders Table
-    const leadersTable = document.querySelector("#leadersTable tbody");
-    if (leadersTable) {
-        leadersTable.innerHTML = "";
-
-        leaders.forEach(leader => {
-            const status = navigator.onLine ? "🟢 Online" : "🔴 Offline";
-            const whatsappLink = `https://wa.me/${leader.phone.replace(/\D/g, '')}`;
-
-            const row = `
-                <tr>
-                    <td><img src="${leader.profileImage || 'default-profile.png'}" class="profile-pic"></td>
-                    <td>${leader.name}</td>
-                    <td>${leader.title}</td>
-                    <td>${leader.country}</td>
-                    <td>${leader.state}</td>
-                    <td>${leader.email}</td>
-                    <td><a href="${whatsappLink}" target="_blank">${leader.phone} 📲</a></td>
-                    <td>${leader.registeredDate || 'N/A'}</td>
-                    <td>${status}</td>
-                </tr>
-            `;
-
-            leadersTable.innerHTML += row;
-        });
-    }
-
-    // Populate the Admins Table
+    // Populate the Admin Table
     const adminsTable = document.querySelector("#adminsTable tbody");
-    if (adminsTable) {
-        adminsTable.innerHTML = ""; // Clear previous content
-
-        const adminRow = `
-            <tr>
-               
-                <td>${storedAdmin.name || storedAdmin.username || "Admin"}</td>  
-                <td>${storedAdmin.email}</td>
-                <td>${storedAdmin.registeredDate || 'N/A'}</td>  
-                <td>🟢 Active</td>
-            </tr>
-        `;
-
-        adminsTable.innerHTML += adminRow;
-    }
+    adminsTable.innerHTML = "";
+    const adminRow = `
+        <tr>
+            <td>${user.displayName || "Admin"}</td>
+            <td>${user.email}</td>
+            <td>${new Date(user.metadata.creationTime).toLocaleDateString()}</td>
+            <td>🟢 Active</td>
+        </tr>
+    `;
+    adminsTable.innerHTML += adminRow;
 }
 
 // Ensure Admin Data Loads on Page Load
-document.addEventListener("DOMContentLoaded", loadAdminDashboard);
+document.addEventListener("DOMContentLoaded", () => {
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            loadLeaders();
+            loadAdminDashboard();
+        }
+    });
+});
 
     </script>
 

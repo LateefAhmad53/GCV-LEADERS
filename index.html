@@ -548,7 +548,23 @@ countrySelect.addEventListener("change", function () {
     }
 });
 
-// Profile Picture Upload
+// Firebase Configuration (Matches Your Provided Config)
+const firebaseConfig = {
+    apiKey: "AIzaSyDFNAifDyYbmSqr98kr1Yg8CZ2hrpem8zY",
+    authDomain: "gcv-leaders.firebaseapp.com",
+    projectId: "gcv-leaders",
+    storageBucket: "gcv-leaders.firebasestorage.app",
+    messagingSenderId: "433078868983",
+    appId: "1:433078868983:web:c3b626f0d6bd30f6f96cf2",
+    measurementId: "G-Z5T5LSNEG1"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+// Profile Picture Upload Preview
 const profileUpload = document.getElementById("profileUpload");
 const profilePic = document.getElementById("profilePic");
 
@@ -568,65 +584,67 @@ function checkOnlineStatus(email) {
     return navigator.onLine ? "🟢 Online" : "🔴 Offline";
 }
 
-// Display Only Approved Leaders on index.html
+// Display Only Approved Leaders from Firestore
 function displayLeaders() {
     const leadersDiv = document.getElementById("leaders");
     leadersDiv.innerHTML = "";
 
-    // Retrieve only approved leaders
-    let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
+    db.collection("leaders").where("approved", "==", true).get().then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+            let leader = doc.data();
+            const status = checkOnlineStatus(leader.email);
+            const whatsappLink = `https://wa.me/${leader.phone.replace(/\D/g, '')}`;
 
-    approvedLeaders.forEach(leader => {
-        const status = checkOnlineStatus(leader.email); // Check online status
-        const whatsappLink = `https://wa.me/${leader.phone.replace(/\D/g, '')}`; // Embed WhatsApp link
-
-        leadersDiv.innerHTML += `
-            <div class="leader-item">
-                <img src="${leader.profileImage || 'default-profile.png'}" 
-                     class="profile-pic" 
-                     style="width:50px; height:50px; border-radius:50%;">
-                <h3>${leader.name} (${leader.title})</h3>
-                <p>📍 ${leader.country}, ${leader.state}</p>
-                <p>📧 ${leader.email}</p>
-                <p>📞 <a href="${whatsappLink}" target="_blank">${leader.phone} 📲</a></p>
-                <p><strong>Status:</strong> ${status}</p>
-            </div>`;
-    });
+            leadersDiv.innerHTML += `
+                <div class="leader-item">
+                    <img src="${leader.profileImage || 'default-profile.png'}" 
+                         class="profile-pic" 
+                         style="width:50px; height:50px; border-radius:50%;">
+                    <h3>${leader.name} (${leader.title})</h3>
+                    <p>📍 ${leader.country}, ${leader.state}</p>
+                    <p>📧 ${leader.email}</p>
+                    <p>📞 <a href="${whatsappLink}" target="_blank">${leader.phone} 📲</a></p>
+                    <p><strong>Status:</strong> ${status}</p>
+                </div>`;
+        });
+    }).catch(error => console.error("Error fetching leaders:", error));
 }
 
 // Load Approved Leaders Initially
-displayLeaders();
+document.addEventListener("DOMContentLoaded", displayLeaders);
 
 // Search Approved Leaders
 document.getElementById("search").addEventListener("input", function () {
     const searchValue = this.value.toLowerCase();
-    const approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
-    const filteredLeaders = approvedLeaders.filter(leader =>
-        leader.name.toLowerCase().includes(searchValue) ||
-        leader.country.toLowerCase().includes(searchValue) ||
-        leader.state.toLowerCase().includes(searchValue) ||
-        leader.title.toLowerCase().includes(searchValue)
-    );
-
-    // Display Filtered Approved Leaders
     const leadersDiv = document.getElementById("leaders");
     leadersDiv.innerHTML = "";
-    filteredLeaders.forEach(leader => {
-        const status = checkOnlineStatus(leader.email);
-        const whatsappLink = `https://wa.me/${leader.phone.replace(/\D/g, '')}`;
 
-        leadersDiv.innerHTML += `
-            <div class="leader-item">
-                <img src="${leader.profileImage || 'default-profile.png'}" 
-                     class="profile-pic" 
-                     style="width:50px; height:50px; border-radius:50%;">
-                <h3>${leader.name} (${leader.title})</h3>
-                <p>📍 ${leader.country}, ${leader.state}</p>
-                <p>📧 ${leader.email}</p>
-                <p>📞 <a href="${whatsappLink}" target="_blank">${leader.phone} 📲</a></p>
-                <p><strong>Status:</strong> ${status}</p>
-            </div>`;
-    });
+    db.collection("leaders").where("approved", "==", true).get().then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+            let leader = doc.data();
+            if (
+                leader.name.toLowerCase().includes(searchValue) ||
+                leader.country.toLowerCase().includes(searchValue) ||
+                leader.state.toLowerCase().includes(searchValue) ||
+                leader.title.toLowerCase().includes(searchValue)
+            ) {
+                const status = checkOnlineStatus(leader.email);
+                const whatsappLink = `https://wa.me/${leader.phone.replace(/\D/g, '')}`;
+
+                leadersDiv.innerHTML += `
+                    <div class="leader-item">
+                        <img src="${leader.profileImage || 'default-profile.png'}" 
+                             class="profile-pic" 
+                             style="width:50px; height:50px; border-radius:50%;">
+                        <h3>${leader.name} (${leader.title})</h3>
+                        <p>📍 ${leader.country}, ${leader.state}</p>
+                        <p>📧 ${leader.email}</p>
+                        <p>📞 <a href="${whatsappLink}" target="_blank">${leader.phone} 📲</a></p>
+                        <p><strong>Status:</strong> ${status}</p>
+                    </div>`;
+            }
+        });
+    }).catch(error => console.error("Error fetching leaders:", error));
 });
 
 // Function to Register a Leader
@@ -641,7 +659,7 @@ function registerLeader(event) {
     const email = document.getElementById("email").value.trim();
     const phone = document.getElementById("phone").value.trim();
     const password = document.getElementById("password").value.trim();
-    const profileUpload = document.getElementById("profileUpload").files[0]; // Profile picture file
+    const profileUpload = document.getElementById("profileUpload").files[0];
 
     // Validate inputs
     if (!name || !country || !state || !title || !email || !phone || !password) {
@@ -649,35 +667,29 @@ function registerLeader(event) {
         return;
     }
 
-    // Get existing leaders from localStorage
-    let leaders = JSON.parse(localStorage.getItem("leaders")) || [];
+    // Check if email already exists in Firestore
+    db.collection("leaders").where("email", "==", email).get().then(snapshot => {
+        if (!snapshot.empty) {
+            alert("This email is already registered!");
+            return;
+        }
 
-    // Check if the email is already registered
-    const existingLeader = leaders.find(leader => leader.email === email);
-    if (existingLeader) {
-        alert("This email is already registered!");
-        return;
-    }
-
-    // Handle Profile Picture Upload (Convert to Base64)
-    let profileImage = "default-avatar.png"; // Default image
-    if (profileUpload) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            profileImage = e.target.result;
-            saveLeaderData(name, country, state, title, email, phone, password, profileImage);
-        };
-        reader.readAsDataURL(profileUpload);
-    } else {
-        saveLeaderData(name, country, state, title, email, phone, password, profileImage);
-    }
+        // Upload Profile Picture if exists
+        if (profileUpload) {
+            const storageRef = storage.ref(`profile_pictures/${email}`);
+            storageRef.put(profileUpload).then(snapshot => {
+                snapshot.ref.getDownloadURL().then(profileImageURL => {
+                    saveLeaderData(name, country, state, title, email, phone, password, profileImageURL);
+                });
+            }).catch(error => console.error("Error uploading profile picture:", error));
+        } else {
+            saveLeaderData(name, country, state, title, email, phone, password, "default-avatar.png");
+        }
+    });
 }
 
-// Function to Save Leader Data
-function saveLeaderData(name, country, state, title, email, phone, password, profileImage) {
-    let leaders = JSON.parse(localStorage.getItem("leaders")) || [];
-
-    // Create leader object
+// Function to Save Leader Data to Firestore
+function saveLeaderData(name, country, state, title, email, phone, password, profileImageURL) {
     const leaderData = {
         name: name,
         country: country,
@@ -686,19 +698,15 @@ function saveLeaderData(name, country, state, title, email, phone, password, pro
         email: email,
         phone: phone,
         password: password,
-        profileImage: profileImage,  // Store uploaded image as Base64
-        registeredDate: new Date().toISOString().split('T')[0]  // Store registration date
+        profileImage: profileImageURL,
+        registeredDate: new Date().toISOString().split('T')[0],
+        approved: false // Requires admin approval
     };
 
-    // Add the new leader to the leaders array
-    leaders.push(leaderData);
-
-    // Save updated leaders list to localStorage
-    localStorage.setItem("leaders", JSON.stringify(leaders));
-
-    // Notify and redirect to login
-    alert("Registration successful! Await admin approval.");
-    window.location.href = "login.html"; // Redirect to leader login page
+    db.collection("leaders").add(leaderData).then(() => {
+        alert("Registration successful! Await admin approval.");
+        window.location.href = "login.html";
+    }).catch(error => console.error("Error saving leader data:", error));
 }
 
 // Attach event listener to the registration form
@@ -710,23 +718,23 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // JavaScript function to add extra effects on text
-        document.addEventListener("DOMContentLoaded", function () {
-            let text = document.getElementById("movingText");
-            setInterval(() => {
-                text.style.color = getRandomColor();
-            }, 500);
-        });
+document.addEventListener("DOMContentLoaded", function () {
+    let text = document.getElementById("movingText");
+    setInterval(() => {
+        text.style.color = getRandomColor();
+    }, 500);
+});
 
-        function getRandomColor() {
-            let letters = "0123456789ABCDEF";
-            let color = "#";
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
-        }
-        
-        // Page Loader Functionality
+function getRandomColor() {
+    let letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+// Page Loader Functionality
 document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
         document.getElementById("pageLoader").style.display = "none";
