@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leader Login - GCV</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .login-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 380px;
+            text-align: center;
+            box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1.2s ease-in-out;
+        }
+
+        .login-container h2 {
+            margin-bottom: 20px;
+            color: #ff416c;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .input-group {
+            margin: 20px 0;
+            text-align: left;
+            position: relative;
+        }
+
+        .input-group label {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            font-size: 14px;
+            color: #888;
+            transition: 0.3s;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group input:valid {
+            border-color: #ff416c;
+        }
+
+        .input-group input:focus + label,
+        .input-group input:valid + label {
+            top: -10px;
+            left: 8px;
+            font-size: 12px;
+            color: #ff416c;
+            background: white;
+            padding: 0 5px;
+        }
+
+        .login-btn {
+            background: #ff416c;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: 0.3s;
+            box-shadow: 0px 4px 10px rgba(255, 65, 108, 0.3);
+        }
+
+        .login-btn:hover {
+            background: #ff4b2b;
+            transform: scale(1.05);
+            box-shadow: 0px 6px 15px rgba(255, 65, 108, 0.4);
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>Leader Login</h2>
+        <form id="loginForm">
+            <div class="input-group">
+                <input type="email" id="email" required>
+                <label for="email">Gmail</label>
+                <div class="error" id="emailError"></div>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="password" required>
+                <label for="password">Password</label>
+                <div class="error" id="passwordError"></div>
+            </div>
+
+            <button type="submit" class="login-btn">Login</button>
+        </form>
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Ensure localStorage has approved leaders data
+        if (!localStorage.getItem("approvedLeaders")) {
+            localStorage.setItem("approvedLeaders", JSON.stringify([]));
+        }
+    });
+
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const emailError = document.getElementById("emailError");
+        const passwordError = document.getElementById("passwordError");
+        const loginBtn = document.querySelector(".login-btn");
+
+        emailError.textContent = "";
+        passwordError.textContent = "";
+
+        // Validate Gmail format
+        const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+        if (!gmailRegex.test(email)) {
+            emailError.textContent = "Please enter a valid Gmail address.";
+            return;
+        }
+
+        if (password.length < 6) {
+            passwordError.textContent = "Password must be at least 6 characters.";
+            return;
+        }
+
+        // Retrieve approved leaders from localStorage
+        let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
+
+        if (approvedLeaders.length === 0) {
+            alert("No registered leaders found! Please sign up first.");
+            return;
+        }
+
+        // Check if leader exists (password verification)
+        let leader = approvedLeaders.find(l => l.email === email && l.password === password);
+
+        if (!leader) {
+            alert("Invalid Gmail or Password!");
+            return;
+        }
+
+        // Store only necessary data in sessionStorage (to avoid overloading localStorage)
+        sessionStorage.setItem("loggedInLeader", JSON.stringify({
+            name: leader.name,
+            email: leader.email,
+            title: leader.title,
+            country: leader.country,
+            state: leader.state,
+            phone: leader.phone,
+            profileImage: leader.profileImage || "default-avatar.png",
+        }));
+
+        // Show success animation
+        loginBtn.innerHTML = "✔️ Logging in...";
+        loginBtn.style.background = "#28a745";
+        loginBtn.style.animation = "pulse 0.5s infinite alternate";
+
+        setTimeout(() => {
+            alert("Login Successful! Redirecting...");
+            window.location.href = "profile.html"; // Redirect to leader's dashboard
+        }, 1000);
+    });
+</script>
+
+</body>
+</html>

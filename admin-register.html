@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Registration & Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            text-align: center;
+            padding: 50px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        input, button {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background: green;
+            color: white;
+            cursor: pointer;
+        }
+
+        .logout-btn {
+            background: red;
+            color: white;
+            margin-top: 15px;
+        }
+
+        .toggle-btn {
+            background: blue;
+            color: white;
+        }
+
+        p {
+            margin-top: 10px;
+        }
+
+        /* Hide login initially */
+        #loginForm {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2 id="formTitle">Admin Registration</h2>
+
+        <!-- Registration Form -->
+        <div id="registerForm">
+            <input type="text" id="adminRegName" placeholder="Full Name" required>
+            <input type="email" id="adminRegEmail" placeholder="Email (Gmail only)" required>
+            <input type="password" id="adminRegPassword" placeholder="Password" required>
+            <button onclick="registerAdmin()">Register</button>
+            <p>Already registered? <button class="toggle-btn" onclick="toggleForms()">Login</button></p>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm">
+            <input type="email" id="adminLoginEmail" placeholder="Enter Gmail" required>
+            <input type="password" id="adminLoginPassword" placeholder="Enter Password" required>
+            <button onclick="loginAdmin()">Login</button>
+            <p>New here? <button class="toggle-btn" onclick="toggleForms()">Register</button></p>
+        </div>
+
+        <!-- Logout Button (Hidden by Default) -->
+        <button class="logout-btn" id="logoutBtn" style="display:none;" onclick="logoutAdmin()">Logout</button>
+    </div>
+
+    <script>
+        function registerAdmin() {
+    const name = document.getElementById("adminRegName").value;
+    const email = document.getElementById("adminRegEmail").value;
+    const password = document.getElementById("adminRegPassword").value;
+
+    if (!name || !email || !password) {
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    if (!email.endsWith("@gmail.com")) {
+        alert("Please enter a valid Gmail address.");
+        return;
+    }
+
+    // Retrieve existing admins or create an empty array
+    let admins = JSON.parse(localStorage.getItem("adminData")) || [];
+
+    // Check if admin already exists
+    if (admins.some(admin => admin.email === email)) {
+        alert("An admin with this email already exists!");
+        return;
+    }
+
+    // Create new admin entry
+    const newAdmin = {
+        name: name,
+        email: email,
+        password: password,
+        loggedIn: false,
+        registeredDate: new Date().toISOString().split('T')[0] // Save current date (YYYY-MM-DD)
+    };
+
+    admins.push(newAdmin); // Add new admin to the list
+    localStorage.setItem("adminData", JSON.stringify(admins));
+
+    alert("Admin registered successfully! You can now log in.");
+    toggleForms();
+}
+        
+            
+
+        function loginAdmin() {
+            const email = document.getElementById("adminLoginEmail").value;
+            const password = document.getElementById("adminLoginPassword").value;
+
+            let storedAdmin = localStorage.getItem("adminData");
+
+            if (!storedAdmin) {
+                alert("No admin registered. Please register first.");
+                return;
+            }
+
+            storedAdmin = JSON.parse(storedAdmin);
+
+            if (email === storedAdmin.email && password === storedAdmin.password) {
+                storedAdmin.loggedIn = true;
+                localStorage.setItem("adminData", JSON.stringify(storedAdmin));
+
+                alert("Login successful!");
+                window.location.href = "admin.html";
+            } else {
+                alert("Invalid credentials. Please try again.");
+            }
+        }
+
+        function logoutAdmin() {
+            let storedAdmin = localStorage.getItem("adminData");
+
+            if (storedAdmin) {
+                storedAdmin = JSON.parse(storedAdmin);
+                storedAdmin.loggedIn = false;
+                localStorage.setItem("adminData", JSON.stringify(storedAdmin)); // Save updated status
+            }
+
+            alert("Logged out successfully!");
+            location.reload();
+        }
+
+        function toggleForms() {
+            const regForm = document.getElementById("registerForm");
+            const loginForm = document.getElementById("loginForm");
+            const title = document.getElementById("formTitle");
+
+            if (regForm.style.display === "none") {
+                regForm.style.display = "block";
+                loginForm.style.display = "none";
+                title.innerText = "Admin Registration";
+            } else {
+                regForm.style.display = "none";
+                loginForm.style.display = "block";
+                title.innerText = "Admin Login";
+            }
+        }
+
+        // Ensure admin data is never lost
+        document.addEventListener("DOMContentLoaded", () => {
+            let storedAdmin = localStorage.getItem("adminData");
+
+            if (storedAdmin) {
+                storedAdmin = JSON.parse(storedAdmin);
+
+                // If an admin exists, switch to login form automatically
+                document.getElementById("registerForm").style.display = "none";
+                document.getElementById("loginForm").style.display = "block";
+                document.getElementById("formTitle").innerText = "Admin Login";
+
+                // Show logout button if the admin was previously logged in
+                if (storedAdmin.loggedIn) {
+                    document.getElementById("logoutBtn").style.display = "block";
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

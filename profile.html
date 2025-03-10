@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Settings - GCV Leaders</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            color: gold;
+        }
+
+        input, select {
+            width: 90%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background: gold;
+            color: black;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: darkgoldenrod;
+        }
+
+        /* Profile Image */
+        .profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid gold;
+            display: block;
+            margin: 0 auto 10px;
+        }
+
+        .upload-btn {
+            display: block;
+            margin: 10px auto;
+        }
+
+        /* Dashboard Section */
+        .dashboard {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .dashboard h3 {
+            color: #333;
+        }
+
+        .logout-btn {
+            margin-top: 15px;
+            background: red;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Profile Settings</h2>
+
+        <img id="profilePic" src="default-profile.png" alt="Profile Picture" class="profile-pic">
+        <input type="file" id="uploadPhoto" class="upload-btn">
+
+        <form id="profileForm">
+            <input type="text" id="name" placeholder="Full Name">
+            
+            <select id="country">
+    <option value="">Select Country</option>
+</select>
+
+<select id="state">
+    <option value="">Select State/Region</option>
+</select>
+          
+
+            <select id="title">
+                <option value="">Select Title</option>
+                <option value="Country Leader">Country Leader</option>
+                <option value="Merchant Leader">Merchant Leader</option>
+            </select>
+
+            <input type="email" id="email" placeholder="Email">
+            <input type="tel" id="phone" placeholder="Phone Number">
+            
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div class="dashboard" id="dashboard">
+        <h3>Current Logged-in Leader</h3>
+        <img id="dashProfilePic" src="default-profile.png" class="profile-pic">
+        <p><strong>Name:</strong> <span id="dashName"></span></p>
+        <p><strong>Country:</strong> <span id="dashCountry"></span></p>
+        <p><strong>State:</strong> <span id="dashState"></span></p>
+        <p><strong>Title:</strong> <span id="dashTitle"></span></p>
+        <p><strong>Email:</strong> <span id="dashEmail"></span></p>
+        <p><strong>Phone:</strong> <span id="dashPhone"></span></p>
+        <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+    
+    
+    <section id="backToHome">
+    <button onclick="goHome()">🏠 Back to Homepage</button>
+</section>
+
+<script>
+    function goHome() {
+        window.location.href = "index.html";
+    }
+</script>
+
+<style>
+    #backToHome {
+        text-align: center;
+        margin: 20px 0;
+        padding: 20px;
+        background: linear-gradient(45deg, #007bff, #6610f2);
+        border-radius: 10px;
+    }
+
+    #backToHome button {
+        background: #fff;
+        color: #007bff;
+        border: none;
+        padding: 12px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    #backToHome button:hover {
+        background: #007bff;
+        color: #fff;
+        transform: scale(1.1);
+    }
+</style>
+
+
+
+
+    <script>
+          // Populate Country List
+        const countries = {
+    "Algeria": ["Adrar", "Chlef", "Laghouat", "Oum El Bouaghi", "Batna", "Bejaia", "Biskra", "Bechar", "Blida", "Bouira", "Tamanrasset", "Tebessa", "Tlemcen", "Tiaret", "Tizi Ouzou", "Algiers", "Djelfa", "Jijel", "Setif", "Saida", "Skikda", "Sidi Bel Abbes", "Annaba", "Guelma", "Constantine", "Medea", "Mostaganem", "M'Sila", "Mascara", "Ouargla", "Oran", "El Bayadh", "Illizi", "Bordj Bou Arreridj", "Boumerdes", "El Tarf", "Tindouf", "Tissemsilt", "El Oued", "Khenchela", "Souk Ahras", "Tipaza", "Mila", "Ain Defla", "Naama", "Ain Temouchent", "Ghardaia", "Relizane"],
+
+    "Angola": ["Bengo", "Benguela", "Bié", "Cabinda", "Cuando Cubango", "Cuanza Norte", "Cuanza Sul", "Cunene", "Huambo", "Huila", "Luanda", "Lunda Norte", "Lunda Sul", "Malanje", "Moxico", "Namibe", "Uige", "Zaire"],
+
+    "Benin": ["Alibori", "Atakora", "Atlantique", "Borgou", "Collines", "Donga", "Kouffo", "Littoral", "Mono", "Oueme", "Plateau", "Zou"],
+
+    "Botswana": ["Central", "Chobe", "Ghanzi", "Kgalagadi", "Kgatleng", "Kweneng", "North-East", "Ngamiland", "South-East", "Southern"],
+
+    "Burkina Faso": ["Balé", "Bam", "Banwa", "Bazèga", "Boucle du Mouhoun", "Bougouriba", "Cascades", "Centre", "Centre-Est", "Centre-Nord", "Centre-Ouest", "Centre-Sud", "Comoé", "Est", "Ganzourgou", "Gnagna", "Gourma", "Hauts-Bassins", "Houet", "Ioba", "Kadiogo", "Kénédougou", "Komondjari", "Kompiènga", "Kossi", "Koulpélogo", "Kouritenga", "Kourwéogo", "Léraba", "Loroum", "Mouhoun", "Nahouri", "Namentenga", "Nayala", "Noumbiel", "Oubritenga", "Oudalan", "Passoré", "Plateau-Central", "Poni", "Sahel", "Sanguié", "Sanmatenga", "Séno", "Sud-Ouest", "Sissili", "Soum", "Sourou", "Tapoa", "Tuy", "Yagha", "Yatenga", "Ziro", "Zondoma", "Zoundwéogo"],
+
+    "Burundi": ["Bubanza", "Bujumbura Mairie", "Bujumbura Rural", "Bururi", "Cankuzo", "Cibitoke", "Gitega", "Karuzi", "Kayanza", "Kirundo", "Makamba", "Muramvya", "Muyinga", "Mwaro", "Ngozi", "Rumonge", "Rutana", "Ruyigi"],
+
+    "Cameroon": ["Adamawa", "Centre", "East", "Far North", "Littoral", "North", "Northwest", "South", "Southwest", "West"],
+
+    "Cape Verde": ["Barlavento Islands", "Sotavento Islands"],
+
+    "Central African Republic": ["Bamingui-Bangoran", "Basse-Kotto", "Haute-Kotto", "Haut-Mbomou", "Kémo", "Lobaye", "Mambéré-Kadéï", "Mbomou", "Nana-Grébizi", "Nana-Mambéré", "Ombella-M'Poko", "Ouaka", "Ouham", "Ouham-Pendé", "Sangha-Mbaéré", "Vakaga"],
+
+    "Chad": ["Batha", "Biltine", "Borkou-Ennedi-Tibesti", "Chari-Baguirmi", "Guéra", "Kanem", "Lac", "Logone Occidental", "Logone Oriental", "Mayo-Kebbi", "Moyen-Chari", "Ouaddaï", "Salamat", "Tandjilé"],
+
+    "Comoros": ["Anjouan", "Grande Comore", "Mohéli"],
+
+    "Democratic Republic of the Congo": ["Bas-Uélé", "Haut-Uélé", "Ituri", "Tshopo", "Haut-Lomami", "Haut-Katanga", "Lomami", "Kasai", "Kwilu", "Kwango", "Mai-Ndombe", "Maniema", "Mongala", "Nord-Ubangi", "Sud-Ubangi", "Tshuapa", "Kinshasa"],
+
+    "Djibouti": ["Ali Sabieh", "Arta", "Dikhil", "Djibouti", "Obock", "Tadjourah"],
+
+    "Egypt": ["Alexandria", "Aswan", "Asyut", "Beheira", "Beni Suef", "Cairo", "Dakahlia", "Damietta", "Faiyum", "Gharbia", "Giza", "Ismailia", "Kafr El Sheikh", "Luxor", "Matruh", "Minya", "Monufia", "New Valley", "North Sinai", "Port Said", "Qalyubia", "Qena", "Red Sea", "Sharqia", "Sohag", "South Sinai", "Suez"],
+
+    "Ethiopia": ["Addis Ababa", "Afar", "Amhara", "Benishangul-Gumuz", "Dire Dawa", "Gambela", "Harari", "Oromia", "Sidama", "Somali", "South West", "Southern Nations, Nationalities, and Peoples' Region (SNNPR)", "Tigray"],
+
+    "Ghana": ["Ahafo", "Ashanti", "Bono", "Bono East", "Central", "Eastern", "Greater Accra", "North East", "Northern", "Oti", "Savannah", "Upper East", "Upper West", "Volta", "Western", "Western North"],
+
+    "Kenya": ["Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo Marakwet", "Embu", "Garissa", "Homa Bay", "Isiolo", "Kajiado", "Kakamega", "Kericho", "Kiambu", "Kilifi", "Kirinyaga", "Kisii", "Kisumu", "Kitui", "Kwale", "Laikipia", "Lamu", "Machakos", "Makueni", "Mandera", "Marsabit", "Meru", "Migori", "Mombasa", "Murang'a", "Nairobi City", "Nakuru", "Nandi", "Narok", "Nyamira", "Nyandarua", "Nyeri", "Samburu", "Siaya", "Taita Taveta", "Tana River", "Tharaka Nithi", "Trans Nzoia", "Turkana", "Uasin Gishu", "Vihiga", "Wajir", "West Pokot"],
+
+    "Nigeria": ["Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara", "FCT (Abuja)"],
+
+    "South Africa": ["Eastern Cape", "Free State", "Gauteng", "KwaZulu-Natal", "Limpopo", "Mpumalanga", "North West", "Northern Cape", "Western Cape"],
+
+    "Zimbabwe": ["Bulawayo", "Harare", "Manicaland", "Mashonaland Central", "Mashonaland East", "Mashonaland West", "Masvingo", "Matabeleland North", "Matabeleland South", "Midlands"],
+    "Djibouti": ["Ali Sabieh", "Arta", "Dikhil", "Djibouti", "Obock", "Tadjourah"],  
+
+    "Equatorial Guinea": ["Annobón", "Bioko Norte", "Bioko Sur", "Centro Sur", "Kié-Ntem", "Litoral", "Wele-Nzas"],  
+
+    "Eritrea": ["Anseba", "Debub", "Debubawi Keyih Bahri", "Gash-Barka", "Maekel", "Semenawi Keyih Bahri"],  
+
+    "Eswatini (Swaziland)": ["Hhohho", "Lubombo", "Manzini", "Shiselweni"],  
+
+    "Gabon": ["Estuaire", "Haut-Ogooué", "Moyen-Ogooué", "Ngounié", "Nyanga", "Ogooué-Ivindo", "Ogooué-Lolo", "Ogooué-Maritime", "Woleu-Ntem"],  
+
+    "Gambia": ["Banjul", "Central River", "Lower River", "North Bank", "Upper River", "West Coast"],  
+
+    "Guinea": ["Beyla", "Boffa", "Boké", "Conakry", "Coyah", "Dabola", "Dalaba", "Dinguiraye", "Dubréka", "Faranah", "Forécariah", "Fria", "Gaoual", "Guéckédou", "Kankan", "Kérouané", "Kindia", "Kissidougou", "Koubia", "Koundara", "Kouroussa", "Labé", "Lélouma", "Lola", "Macenta", "Mali", "Mamou", "Mandiana", "Nzérékoré", "Pita", "Siguiri", "Télimélé", "Tougué", "Yomou"],  
+
+    "Guinea-Bissau": ["Bafatá", "Biombo", "Bissau", "Bolama", "Cacheu", "Gabú", "Oio", "Quinara", "Tombali"],  
+
+    "Ivory Coast (Côte d'Ivoire)": ["Abidjan", "Bas-Sassandra", "Comoé", "Denguélé", "Gôh-Djiboua", "Lacs", "Lagunes", "Montagnes", "Sassandra-Marahoué", "Savanes", "Vallée du Bandama", "Woroba", "Yamoussoukro", "Zanzan"],  
+
+    "Lesotho": ["Berea", "Butha-Buthe", "Leribe", "Mafeteng", "Maseru", "Mohale's Hoek", "Mokhotlong", "Qacha's Nek", "Quthing", "Thaba-Tseka"],  
+
+    "Liberia": ["Bomi", "Bong", "Gbarpolu", "Grand Bassa", "Grand Cape Mount", "Grand Gedeh", "Grand Kru", "Lofa", "Margibi", "Maryland", "Montserrado", "Nimba", "River Cess", "River Gee", "Sinoe"],  
+
+    "Libya": ["Al Butnan", "Al Jabal al Akhdar", "Al Jabal al Gharbi", "Al Jafara", "Al Kufrah", "Al Marj", "Al Marqab", "Al Wahat", "An Nuqat al Khams", "Az Zawiyah", "Banghazi", "Darnah", "Ghat", "Jafara", "Jufra", "Murzuq", "Nalut", "Sabha", "Sirte", "Tarabulus", "Wadi al Hayaa", "Wadi al Shatii", "Zliten"],  
+
+    "Madagascar": ["Alaotra-Mangoro", "Amoron'i Mania", "Analamanga", "Analanjirofo", "Androy", "Anosy", "Atsimo-Andrefana", "Atsimo-Atsinanana", "Atsinanana", "Betsiboka", "Boeny", "Bongolava", "Diana", "Haute Matsiatra", "Ihorombe", "Itasy", "Melaky", "Menabe", "Sava", "Sofia", "Vakinankaratra", "Vatovavy-Fitovinany"],  
+
+    "Malawi": ["Balaka", "Blantyre", "Chikwawa", "Chiradzulu", "Chitipa", "Dedza", "Dowa", "Karonga", "Kasungu", "Likoma", "Lilongwe", "Machinga", "Mangochi", "Mchinji", "Mulanje", "Mwanza", "Mzimba", "Neno", "Nkhata Bay", "Nkhotakota", "Nsanje", "Ntcheu", "Ntchisi", "Phalombe", "Rumphi", "Salima", "Thyolo", "Zomba"],  
+
+    "Mali": ["Bamako", "Gao", "Kayes", "Kidal", "Koulikoro", "Mopti", "Ségou", "Sikasso", "Tombouctou"],  
+
+    "Mauritania": ["Adrar", "Assaba", "Brakna", "Dakhlet Nouadhibou", "Gorgol", "Guidimaka", "Hodh ech Chargui", "Hodh el Gharbi", "Inchiri", "Nouakchott-Nord", "Nouakchott-Ouest", "Nouakchott-Sud", "Tagant", "Tiris Zemmour", "Trarza"],  
+
+    "Mauritius": ["Agalega Islands", "Black River", "Flacq", "Grand Port", "Moka", "Pamplemousses", "Plaines Wilhems", "Port Louis", "Rivière du Rempart", "Rodrigues", "Savanne"],  
+
+    "Morocco": ["Agadir-Ida Ou Tanane", "Al Hoceïma", "Azilal", "Beni Mellal", "Berkane", "Boujdour", "Casablanca", "Chefchaouen", "El Jadida", "Errachidia", "Essaouira", "Fes", "Guelmim", "Ifrane", "Kenitra", "Khemisset", "Khenifra", "Khouribga", "Laayoune", "Marrakech", "Meknes", "Nador", "Ouarzazate", "Oujda-Angad", "Rabat", "Safi", "Settat", "Tanger-Tetouan", "Taroudant", "Taza", "Tiznit"],  
+
+    "Mozambique": ["Cabo Delgado", "Gaza", "Inhambane", "Manica", "Maputo", "Maputo City", "Nampula", "Niassa", "Sofala", "Tete", "Zambezia"],  
+
+    "Namibia": ["Erongo", "Hardap", "Karas", "Kavango East", "Kavango West", "Khomas", "Kunene", "Ohangwena", "Omaheke", "Omusati", "Oshana", "Oshikoto", "Otjozondjupa"],  
+
+    "Rwanda": ["Eastern Province", "Kigali City", "Northern Province", "Southern Province", "Western Province"],  
+
+    "Senegal": ["Dakar", "Diourbel", "Fatick", "Kaolack", "Kolda", "Louga", "Matam", "Saint-Louis", "Tambacounda", "Thiès", "Ziguinchor"],  
+
+    "Sudan": ["Khartoum", "North Darfur", "South Darfur", "West Darfur", "River Nile", "Kassala", "Blue Nile", "North Kordofan", "South Kordofan"],
+    "Niger": ["Agadez", "Diffa", "Dosso", "Maradi", "Tahoua", "Tillabéri", "Zinder", "Niamey"],  
+
+    "Republic of the Congo": ["Bouenza", "Cuvette", "Cuvette-Ouest", "Kouilou", "Lékoumou", "Likouala", "Niari", "Plateaux", "Pointe-Noire", "Pool", "Sangha", "Brazzaville"],  
+
+    "São Tomé and Príncipe": ["Água Grande", "Cantagalo", "Caué", "Lembá", "Lobata", "Mé-Zóchi", "Príncipe"],  
+
+    "Seychelles": ["Anse aux Pins", "Anse Boileau", "Anse Etoile", "Anse Royale", "Baie Lazare", "Baie Sainte Anne", "Beau Vallon", "Bel Air", "Bel Ombre", "Cascade", "Glacis", "Grand'Anse Mahé", "Grand'Anse Praslin", "La Digue", "Les Mamelles", "Mont Buxton", "Mont Fleuri", "Plaisance", "Pointe La Rue", "Port Glaud", "Roche Caiman", "Saint Louis", "Takamaka"],  
+
+    "Sierra Leone": ["Eastern", "Northern", "North Western", "Southern", "Western Area"],  
+
+    "Somalia": ["Awdal", "Bakool", "Banaadir", "Bari", "Bay", "Galguduud", "Gedo", "Hiran", "Lower Juba", "Lower Shabelle", "Middle Juba", "Middle Shabelle", "Mudug", "Nugal", "Sanaag", "Sool", "Togdheer", "Woqooyi Galbeed"],  
+
+    "South Sudan": ["Central Equatoria", "Eastern Equatoria", "Jonglei", "Lakes", "Northern Bahr el Ghazal", "Unity", "Upper Nile", "Warrap", "Western Bahr el Ghazal", "Western Equatoria"],  
+
+    "Tanzania": ["Arusha", "Dar es Salaam", "Dodoma", "Geita", "Iringa", "Kagera", "Katavi", "Kigoma", "Kilimanjaro", "Lindi", "Manyara", "Mara", "Mbeya", "Morogoro", "Mtwara", "Mwanza", "Njombe", "Pemba North", "Pemba South", "Pwani", "Rukwa", "Ruvuma", "Shinyanga", "Simiyu", "Singida", "Tabora", "Tanga", "Zanzibar Central/South", "Zanzibar North", "Zanzibar Urban/West"],  
+
+    "Togo": ["Kara", "Plateaux", "Savanes", "Centrale", "Maritime"],  
+
+    "Tunisia": ["Ariana", "Béja", "Ben Arous", "Bizerte", "Gabès", "Gafsa", "Jendouba", "Kairouan", "Kasserine", "Kebili", "La Manouba", "Le Kef", "Mahdia", "Medenine", "Monastir", "Nabeul", "Sfax", "Sidi Bouzid", "Siliana", "Sousse", "Tataouine", "Tozeur", "Tunis", "Zaghouan"],  
+
+    "Uganda": ["Central", "Eastern", "Northern", "Western"],  
+
+    "Zambia": ["Central", "Copperbelt", "Eastern", "Luapula", "Lusaka", "Muchinga", "Northern", "North-Western", "Southern", "Western"]   
+};
+
+// Populate Country Dropdown
+const countrySelect = document.getElementById("country");
+const stateSelect = document.getElementById("state");
+
+for (let country in countries) {
+    let option = document.createElement("option");
+    option.value = country;
+    option.textContent = country;
+    countrySelect.appendChild(option);
+}
+
+// Populate State Dropdown Based on Selected Country
+countrySelect.addEventListener("change", function () {
+    stateSelect.innerHTML = '<option value="">Select State/Region</option>'; // Reset states
+    let selectedCountry = this.value;
+    if (selectedCountry && countries[selectedCountry]) {
+        countries[selectedCountry].forEach(state => {
+            let option = document.createElement("option");
+            option.value = state;
+            option.textContent = state;
+            stateSelect.appendChild(option);
+        });
+    }
+});
+    // Load stored profile data from sessionStorage
+    document.addEventListener("DOMContentLoaded", () => {
+        const loggedInUser = JSON.parse(sessionStorage.getItem("loggedInLeader"));
+
+        if (loggedInUser) {
+            document.getElementById("profilePic").src = loggedInUser.profileImage || "default-profile.png";
+            document.getElementById("name").value = loggedInUser.name || "";
+            document.getElementById("country").value = loggedInUser.country || "";
+            document.getElementById("state").value = loggedInUser.state || "";
+            document.getElementById("title").value = loggedInUser.title || "";
+            document.getElementById("email").value = loggedInUser.email || "";
+            document.getElementById("phone").value = loggedInUser.phone || "";
+
+            // Display in dashboard section
+            document.getElementById("dashProfilePic").src = loggedInUser.profileImage || "default-profile.png";
+            document.getElementById("dashName").textContent = loggedInUser.name || "N/A";
+            document.getElementById("dashCountry").textContent = loggedInUser.country || "N/A";
+            document.getElementById("dashState").textContent = loggedInUser.state || "N/A";
+            document.getElementById("dashTitle").textContent = loggedInUser.title || "N/A";
+            document.getElementById("dashEmail").textContent = loggedInUser.email || "N/A";
+            document.getElementById("dashPhone").textContent = loggedInUser.phone || "N/A";
+        } else {
+            alert("No user logged in! Redirecting to login...");
+            window.location.href = "login.html";
+        }
+    });
+
+    // Handle profile picture upload
+    document.getElementById("uploadPhoto").addEventListener("change", function () {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            document.getElementById("profilePic").src = event.target.result;
+            saveProfile(); // Auto-save photo
+        };
+        reader.readAsDataURL(this.files[0]);
+    });
+
+    // Save profile changes
+    document.getElementById("profileForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        saveProfile();
+        alert("Profile updated successfully!");
+    });
+
+    function saveProfile() {
+        let loggedInUser = JSON.parse(sessionStorage.getItem("loggedInLeader"));
+
+        if (!loggedInUser) {
+            alert("Error: No user data found. Please log in again.");
+            return;
+        }
+
+        // Update the logged-in user's data
+        loggedInUser.profileImage = document.getElementById("profilePic").src;
+        loggedInUser.name = document.getElementById("name").value;
+        loggedInUser.country = document.getElementById("country").value;
+        loggedInUser.state = document.getElementById("state").value;
+        loggedInUser.title = document.getElementById("title").value;
+        loggedInUser.email = document.getElementById("email").value;
+        loggedInUser.phone = document.getElementById("phone").value;
+
+        // Update the user list in localStorage
+        let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
+        let userIndex = approvedLeaders.findIndex(user => user.email === loggedInUser.email);
+
+        if (userIndex !== -1) {
+            approvedLeaders[userIndex] = loggedInUser;
+            localStorage.setItem("approvedLeaders", JSON.stringify(approvedLeaders));
+        }
+
+        // Save updated logged-in user data
+        sessionStorage.setItem("loggedInLeader", JSON.stringify(loggedInUser));
+
+        // Update dashboard details instantly
+        document.getElementById("dashProfilePic").src = loggedInUser.profileImage || "default-profile.png";
+        document.getElementById("dashName").textContent = loggedInUser.name || "N/A";
+        document.getElementById("dashCountry").textContent = loggedInUser.country || "N/A";
+        document.getElementById("dashState").textContent = loggedInUser.state || "N/A";
+        document.getElementById("dashTitle").textContent = loggedInUser.title || "N/A";
+        document.getElementById("dashEmail").textContent = loggedInUser.email || "N/A";
+        document.getElementById("dashPhone").textContent = loggedInUser.phone || "N/A";
+    }
+
+    // Logout Function
+    document.getElementById("logoutBtn").addEventListener("click", function () {
+        sessionStorage.removeItem("loggedInLeader"); // Correct logout key
+        alert("Logged out successfully!");
+        window.location.href = "login.html";
+    });
+
+    </script>
+    
+
+</body>
+</html>

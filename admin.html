@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - GCV Leader Management</title>
+    <style>
+    /* Logout Button Section */
+.logout-section {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 1000;
+}
+
+.logout-btn {
+    background: red;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.logout-btn:hover {
+    background: darkred;
+    transform: scale(1.1);
+}
+
+/* Make sure button remains visible on smaller screens */
+@media (max-width: 600px) {
+    .logout-section {
+        top: 10px;
+        right: 10px;
+    }
+
+    .logout-btn {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+}
+
+/* General Styling */
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+h2 {
+    color: #222;
+}
+
+/* Form Elements */
+input, select, button {
+    width: 90%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    background: gold;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: darkgoldenrod;
+}
+
+/* Leader List */
+.leader-list {
+    margin-top: 20px;
+}
+
+/* Leader Item */
+.leader-item {
+    background: #e0e0e0;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 8px;
+    text-align: left;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Leader Profile Image */
+.leader-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #555;
+}
+
+/* Leader Details */
+.leader-details {
+    flex-grow: 1;
+}
+
+.leader-details h3 {
+    margin: 5px 0;
+    font-size: 18px;
+}
+
+.leader-details p {
+    margin: 3px 0;
+    font-size: 14px;
+}
+
+/* Buttons */
+.approve-btn, .edit-btn, .delete-btn {
+    padding: 8px 12px;
+    cursor: pointer;
+    border: none;
+    font-size: 14px;
+    border-radius: 5px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Approve Button */
+.approve-btn {
+    background: blue;
+    color: white;
+}
+
+/* Edit Button (Now always visible for approved leaders) */
+.edit-btn {
+    background: green;
+    color: white;
+}
+
+/* Delete Button */
+.delete-btn {
+    background: red;
+    color: white;
+}
+
+/* Adjusting button layout on smaller screens */
+@media (max-width: 600px) {
+    .leader-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .leader-img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .approve-btn, .edit-btn, .delete-btn {
+        width: 100%;
+        text-align: center;
+        margin-top: 5px;
+    }
+}
+
+/* Footer */
+footer {
+    margin-top: 20px;
+    background: black;
+    color: white;
+    padding: 10px;
+}
+.leader-photo {
+    width: 100px; /* Increase size */
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    margin: 10px auto;
+    border: 2px solid #ddd;
+}
+<!-- Internal CSS for Styling -->
+    /* Admin Dashboard General Styling */
+    .admin-dashboard {
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        background: #f8f9fa;
+    }
+
+    .dashboard-title {
+        text-align: center;
+        font-size: 28px;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    /* Stats Section */
+    .stats-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .stat-box {
+        background: #007bff;
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        width: 150px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-box h3 {
+        font-size: 18px;
+        margin-bottom: 5px;
+    }
+
+    .stat-box p {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    /* Table Styling */
+    .table-container {
+        overflow-x: auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    th {
+        background-color: #007bff;
+        color: white;
+        text-transform: uppercase;
+    }
+
+    /* Profile Picture */
+    img.profile-pic {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .stats-container {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-box {
+            width: 80%;
+        }
+
+        th, td {
+            font-size: 12px;
+            padding: 8px;
+        }
+    }
+
+    @media (max-width: 500px) {
+        table {
+            font-size: 12px;
+        }
+    }
+    
+    /* Admin Section */
+.admin-section {
+    width: 90%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.admin-section h2 {
+    font-size: 22px;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+/* Table Styling */
+.table-container {
+    overflow-x: auto;
+}
+
+#adminsTable {
+    width: 100%;
+    border-collapse: collapse;
+    background: #f9f9f9;
+}
+
+#adminsTable th, #adminsTable td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+#adminsTable th {
+    background: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+#adminsTable tbody tr:hover {
+    background: #ddd;
+}
+
+/* Active Status */
+#adminsTable td:last-child {
+    font-weight: bold;
+    color: green;
+}
+
+
+    
+
+</style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Admin Panel - Manage Leaders</h2>
+
+        <h3>Add New Leader</h3>
+        <form id="addLeaderForm">
+            <input type="text" id="adminName" placeholder="Full Name" required>
+            <select id="adminCountry">
+                <option value="">Select Country</option>
+            </select>
+            <select id="adminState">
+                <option value="">Select State</option>
+            </select>
+            <select id="adminTitle">
+                <option value="">Select Title</option>
+                <option value="Country Leader">Country Leader</option>
+                <option value="Merchant Leader">Merchant Leader</option>
+            </select>
+            <input type="email" id="adminEmail" placeholder="Email" required>
+            <input type="tel" id="adminPhone" placeholder="Phone Number" required>
+            <input type="file" id="adminPhoto" accept="image/*" required>
+            <button type="submit">Add Leader</button>
+        </form>
+    </div>
+
+    <section class="admin-panel">
+    <h2>Pending Leaders</h2>
+    <div id="pendingLeaders" class="leader-list"></div>
+
+    <h2>Approved Leaders</h2>
+    <div id="approvedLeaders" class="leader-list"></div>
+
+    <button class="logout-btn" onclick="logoutAdmin()">🚪 Logout</button>
+</section>
+
+<!-- Leader Statistics Section -->
+<div class="admin-dashboard">
+    <h2 class="dashboard-title">Admin Dashboard</h2>
+
+    <!-- Statistics Section -->
+    <div class="stats-container">
+        <div class="stat-box">
+            <h3>Total Leaders</h3>
+            <p id="totalLeaders">0</p>
+        </div>
+        <div class="stat-box">
+            <h3>Total Admins</h3>
+            <p id="totalAdmins">0</p>
+        </div>
+    </div>
+
+    <!-- Registered Leaders Table -->
+    <h3 class="section-title">Registered Leaders</h3>
+    <div class="table-container">
+        <table id="leadersTable">
+            <thead>
+                <tr>
+                    <th>Profile</th>
+                    <th>Name</th>
+                    <th>Title</th>
+                    <th>Country</th>
+                    <th>State</th>
+                    <th>Email</th>
+                    <th>Phone (WhatsApp)</th>
+                    <th>Registered Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Leaders will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<section class="admin-section">
+    <h2>Logged-in Admin</h2>
+    <div class="table-container">
+        <table id="adminsTable">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Registered Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Logged-in admin will be added here -->
+            </tbody>
+        </table>
+    </div>
+</section>
+
+
+
+
+
+    <footer>
+        <p>Admin Panel | <a href="index.html" style="color: gold;">Go Back</a></p>
+    </footer>
+
+    <script>
+        const africanCountries = {
+    "Algeria": ["Adrar", "Chlef", "Laghouat", "Oum El Bouaghi", "Batna", "Bejaia", "Biskra", "Bechar", "Blida", "Bouira", "Tamanrasset", "Tebessa", "Tlemcen", "Tiaret", "Tizi Ouzou", "Algiers", "Djelfa", "Jijel", "Setif", "Saida", "Skikda", "Sidi Bel Abbes", "Annaba", "Guelma", "Constantine", "Medea", "Mostaganem", "M'Sila", "Mascara", "Ouargla", "Oran", "El Bayadh", "Illizi", "Bordj Bou Arreridj", "Boumerdes", "El Tarf", "Tindouf", "Tissemsilt", "El Oued", "Khenchela", "Souk Ahras", "Tipaza", "Mila", "Ain Defla", "Naama", "Ain Temouchent", "Ghardaia", "Relizane"],
+
+    "Angola": ["Bengo", "Benguela", "Bié", "Cabinda", "Cuando Cubango", "Cuanza Norte", "Cuanza Sul", "Cunene", "Huambo", "Huila", "Luanda", "Lunda Norte", "Lunda Sul", "Malanje", "Moxico", "Namibe", "Uige", "Zaire"],
+
+    "Benin": ["Alibori", "Atakora", "Atlantique", "Borgou", "Collines", "Donga", "Kouffo", "Littoral", "Mono", "Oueme", "Plateau", "Zou"],
+
+    "Botswana": ["Central", "Chobe", "Ghanzi", "Kgalagadi", "Kgatleng", "Kweneng", "North-East", "Ngamiland", "South-East", "Southern"],
+
+    "Burkina Faso": ["Balé", "Bam", "Banwa", "Bazèga", "Boucle du Mouhoun", "Bougouriba", "Cascades", "Centre", "Centre-Est", "Centre-Nord", "Centre-Ouest", "Centre-Sud", "Comoé", "Est", "Ganzourgou", "Gnagna", "Gourma", "Hauts-Bassins", "Houet", "Ioba", "Kadiogo", "Kénédougou", "Komondjari", "Kompiènga", "Kossi", "Koulpélogo", "Kouritenga", "Kourwéogo", "Léraba", "Loroum", "Mouhoun", "Nahouri", "Namentenga", "Nayala", "Noumbiel", "Oubritenga", "Oudalan", "Passoré", "Plateau-Central", "Poni", "Sahel", "Sanguié", "Sanmatenga", "Séno", "Sud-Ouest", "Sissili", "Soum", "Sourou", "Tapoa", "Tuy", "Yagha", "Yatenga", "Ziro", "Zondoma", "Zoundwéogo"],
+
+    "Burundi": ["Bubanza", "Bujumbura Mairie", "Bujumbura Rural", "Bururi", "Cankuzo", "Cibitoke", "Gitega", "Karuzi", "Kayanza", "Kirundo", "Makamba", "Muramvya", "Muyinga", "Mwaro", "Ngozi", "Rumonge", "Rutana", "Ruyigi"],
+
+    "Cameroon": ["Adamawa", "Centre", "East", "Far North", "Littoral", "North", "Northwest", "South", "Southwest", "West"],
+
+    "Cape Verde": ["Barlavento Islands", "Sotavento Islands"],
+
+    "Central African Republic": ["Bamingui-Bangoran", "Basse-Kotto", "Haute-Kotto", "Haut-Mbomou", "Kémo", "Lobaye", "Mambéré-Kadéï", "Mbomou", "Nana-Grébizi", "Nana-Mambéré", "Ombella-M'Poko", "Ouaka", "Ouham", "Ouham-Pendé", "Sangha-Mbaéré", "Vakaga"],
+
+    "Chad": ["Batha", "Biltine", "Borkou-Ennedi-Tibesti", "Chari-Baguirmi", "Guéra", "Kanem", "Lac", "Logone Occidental", "Logone Oriental", "Mayo-Kebbi", "Moyen-Chari", "Ouaddaï", "Salamat", "Tandjilé"],
+
+    "Comoros": ["Anjouan", "Grande Comore", "Mohéli"],
+
+    "Democratic Republic of the Congo": ["Bas-Uélé", "Haut-Uélé", "Ituri", "Tshopo", "Haut-Lomami", "Haut-Katanga", "Lomami", "Kasai", "Kwilu", "Kwango", "Mai-Ndombe", "Maniema", "Mongala", "Nord-Ubangi", "Sud-Ubangi", "Tshuapa", "Kinshasa"],
+
+    "Djibouti": ["Ali Sabieh", "Arta", "Dikhil", "Djibouti", "Obock", "Tadjourah"],
+
+    "Egypt": ["Alexandria", "Aswan", "Asyut", "Beheira", "Beni Suef", "Cairo", "Dakahlia", "Damietta", "Faiyum", "Gharbia", "Giza", "Ismailia", "Kafr El Sheikh", "Luxor", "Matruh", "Minya", "Monufia", "New Valley", "North Sinai", "Port Said", "Qalyubia", "Qena", "Red Sea", "Sharqia", "Sohag", "South Sinai", "Suez"],
+
+    "Ethiopia": ["Addis Ababa", "Afar", "Amhara", "Benishangul-Gumuz", "Dire Dawa", "Gambela", "Harari", "Oromia", "Sidama", "Somali", "South West", "Southern Nations, Nationalities, and Peoples' Region (SNNPR)", "Tigray"],
+
+    "Ghana": ["Ahafo", "Ashanti", "Bono", "Bono East", "Central", "Eastern", "Greater Accra", "North East", "Northern", "Oti", "Savannah", "Upper East", "Upper West", "Volta", "Western", "Western North"],
+
+    "Kenya": ["Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo Marakwet", "Embu", "Garissa", "Homa Bay", "Isiolo", "Kajiado", "Kakamega", "Kericho", "Kiambu", "Kilifi", "Kirinyaga", "Kisii", "Kisumu", "Kitui", "Kwale", "Laikipia", "Lamu", "Machakos", "Makueni", "Mandera", "Marsabit", "Meru", "Migori", "Mombasa", "Murang'a", "Nairobi City", "Nakuru", "Nandi", "Narok", "Nyamira", "Nyandarua", "Nyeri", "Samburu", "Siaya", "Taita Taveta", "Tana River", "Tharaka Nithi", "Trans Nzoia", "Turkana", "Uasin Gishu", "Vihiga", "Wajir", "West Pokot"],
+
+    "Nigeria": ["Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara", "FCT (Abuja)"],
+
+    "South Africa": ["Eastern Cape", "Free State", "Gauteng", "KwaZulu-Natal", "Limpopo", "Mpumalanga", "North West", "Northern Cape", "Western Cape"],
+
+    "Zimbabwe": ["Bulawayo", "Harare", "Manicaland", "Mashonaland Central", "Mashonaland East", "Mashonaland West", "Masvingo", "Matabeleland North", "Matabeleland South", "Midlands"],
+    "Djibouti": ["Ali Sabieh", "Arta", "Dikhil", "Djibouti", "Obock", "Tadjourah"],  
+
+    "Equatorial Guinea": ["Annobón", "Bioko Norte", "Bioko Sur", "Centro Sur", "Kié-Ntem", "Litoral", "Wele-Nzas"],  
+
+    "Eritrea": ["Anseba", "Debub", "Debubawi Keyih Bahri", "Gash-Barka", "Maekel", "Semenawi Keyih Bahri"],  
+
+    "Eswatini (Swaziland)": ["Hhohho", "Lubombo", "Manzini", "Shiselweni"],  
+
+    "Gabon": ["Estuaire", "Haut-Ogooué", "Moyen-Ogooué", "Ngounié", "Nyanga", "Ogooué-Ivindo", "Ogooué-Lolo", "Ogooué-Maritime", "Woleu-Ntem"],  
+
+    "Gambia": ["Banjul", "Central River", "Lower River", "North Bank", "Upper River", "West Coast"],  
+
+    "Guinea": ["Beyla", "Boffa", "Boké", "Conakry", "Coyah", "Dabola", "Dalaba", "Dinguiraye", "Dubréka", "Faranah", "Forécariah", "Fria", "Gaoual", "Guéckédou", "Kankan", "Kérouané", "Kindia", "Kissidougou", "Koubia", "Koundara", "Kouroussa", "Labé", "Lélouma", "Lola", "Macenta", "Mali", "Mamou", "Mandiana", "Nzérékoré", "Pita", "Siguiri", "Télimélé", "Tougué", "Yomou"],  
+
+    "Guinea-Bissau": ["Bafatá", "Biombo", "Bissau", "Bolama", "Cacheu", "Gabú", "Oio", "Quinara", "Tombali"],  
+
+    "Ivory Coast (Côte d'Ivoire)": ["Abidjan", "Bas-Sassandra", "Comoé", "Denguélé", "Gôh-Djiboua", "Lacs", "Lagunes", "Montagnes", "Sassandra-Marahoué", "Savanes", "Vallée du Bandama", "Woroba", "Yamoussoukro", "Zanzan"],  
+
+    "Lesotho": ["Berea", "Butha-Buthe", "Leribe", "Mafeteng", "Maseru", "Mohale's Hoek", "Mokhotlong", "Qacha's Nek", "Quthing", "Thaba-Tseka"],  
+
+    "Liberia": ["Bomi", "Bong", "Gbarpolu", "Grand Bassa", "Grand Cape Mount", "Grand Gedeh", "Grand Kru", "Lofa", "Margibi", "Maryland", "Montserrado", "Nimba", "River Cess", "River Gee", "Sinoe"],  
+
+    "Libya": ["Al Butnan", "Al Jabal al Akhdar", "Al Jabal al Gharbi", "Al Jafara", "Al Kufrah", "Al Marj", "Al Marqab", "Al Wahat", "An Nuqat al Khams", "Az Zawiyah", "Banghazi", "Darnah", "Ghat", "Jafara", "Jufra", "Murzuq", "Nalut", "Sabha", "Sirte", "Tarabulus", "Wadi al Hayaa", "Wadi al Shatii", "Zliten"],  
+
+    "Madagascar": ["Alaotra-Mangoro", "Amoron'i Mania", "Analamanga", "Analanjirofo", "Androy", "Anosy", "Atsimo-Andrefana", "Atsimo-Atsinanana", "Atsinanana", "Betsiboka", "Boeny", "Bongolava", "Diana", "Haute Matsiatra", "Ihorombe", "Itasy", "Melaky", "Menabe", "Sava", "Sofia", "Vakinankaratra", "Vatovavy-Fitovinany"],  
+
+    "Malawi": ["Balaka", "Blantyre", "Chikwawa", "Chiradzulu", "Chitipa", "Dedza", "Dowa", "Karonga", "Kasungu", "Likoma", "Lilongwe", "Machinga", "Mangochi", "Mchinji", "Mulanje", "Mwanza", "Mzimba", "Neno", "Nkhata Bay", "Nkhotakota", "Nsanje", "Ntcheu", "Ntchisi", "Phalombe", "Rumphi", "Salima", "Thyolo", "Zomba"],  
+
+    "Mali": ["Bamako", "Gao", "Kayes", "Kidal", "Koulikoro", "Mopti", "Ségou", "Sikasso", "Tombouctou"],  
+
+    "Mauritania": ["Adrar", "Assaba", "Brakna", "Dakhlet Nouadhibou", "Gorgol", "Guidimaka", "Hodh ech Chargui", "Hodh el Gharbi", "Inchiri", "Nouakchott-Nord", "Nouakchott-Ouest", "Nouakchott-Sud", "Tagant", "Tiris Zemmour", "Trarza"],  
+
+    "Mauritius": ["Agalega Islands", "Black River", "Flacq", "Grand Port", "Moka", "Pamplemousses", "Plaines Wilhems", "Port Louis", "Rivière du Rempart", "Rodrigues", "Savanne"],  
+
+    "Morocco": ["Agadir-Ida Ou Tanane", "Al Hoceïma", "Azilal", "Beni Mellal", "Berkane", "Boujdour", "Casablanca", "Chefchaouen", "El Jadida", "Errachidia", "Essaouira", "Fes", "Guelmim", "Ifrane", "Kenitra", "Khemisset", "Khenifra", "Khouribga", "Laayoune", "Marrakech", "Meknes", "Nador", "Ouarzazate", "Oujda-Angad", "Rabat", "Safi", "Settat", "Tanger-Tetouan", "Taroudant", "Taza", "Tiznit"],  
+
+    "Mozambique": ["Cabo Delgado", "Gaza", "Inhambane", "Manica", "Maputo", "Maputo City", "Nampula", "Niassa", "Sofala", "Tete", "Zambezia"],  
+
+    "Namibia": ["Erongo", "Hardap", "Karas", "Kavango East", "Kavango West", "Khomas", "Kunene", "Ohangwena", "Omaheke", "Omusati", "Oshana", "Oshikoto", "Otjozondjupa"],  
+
+    "Rwanda": ["Eastern Province", "Kigali City", "Northern Province", "Southern Province", "Western Province"],  
+
+    "Senegal": ["Dakar", "Diourbel", "Fatick", "Kaolack", "Kolda", "Louga", "Matam", "Saint-Louis", "Tambacounda", "Thiès", "Ziguinchor"],  
+
+    "Sudan": ["Khartoum", "North Darfur", "South Darfur", "West Darfur", "River Nile", "Kassala", "Blue Nile", "North Kordofan", "South Kordofan"],
+    "Niger": ["Agadez", "Diffa", "Dosso", "Maradi", "Tahoua", "Tillabéri", "Zinder", "Niamey"],  
+
+    "Republic of the Congo": ["Bouenza", "Cuvette", "Cuvette-Ouest", "Kouilou", "Lékoumou", "Likouala", "Niari", "Plateaux", "Pointe-Noire", "Pool", "Sangha", "Brazzaville"],  
+
+    "São Tomé and Príncipe": ["Água Grande", "Cantagalo", "Caué", "Lembá", "Lobata", "Mé-Zóchi", "Príncipe"],  
+
+    "Seychelles": ["Anse aux Pins", "Anse Boileau", "Anse Etoile", "Anse Royale", "Baie Lazare", "Baie Sainte Anne", "Beau Vallon", "Bel Air", "Bel Ombre", "Cascade", "Glacis", "Grand'Anse Mahé", "Grand'Anse Praslin", "La Digue", "Les Mamelles", "Mont Buxton", "Mont Fleuri", "Plaisance", "Pointe La Rue", "Port Glaud", "Roche Caiman", "Saint Louis", "Takamaka"],  
+
+    "Sierra Leone": ["Eastern", "Northern", "North Western", "Southern", "Western Area"],  
+
+    "Somalia": ["Awdal", "Bakool", "Banaadir", "Bari", "Bay", "Galguduud", "Gedo", "Hiran", "Lower Juba", "Lower Shabelle", "Middle Juba", "Middle Shabelle", "Mudug", "Nugal", "Sanaag", "Sool", "Togdheer", "Woqooyi Galbeed"],  
+
+    "South Sudan": ["Central Equatoria", "Eastern Equatoria", "Jonglei", "Lakes", "Northern Bahr el Ghazal", "Unity", "Upper Nile", "Warrap", "Western Bahr el Ghazal", "Western Equatoria"],  
+
+    "Tanzania": ["Arusha", "Dar es Salaam", "Dodoma", "Geita", "Iringa", "Kagera", "Katavi", "Kigoma", "Kilimanjaro", "Lindi", "Manyara", "Mara", "Mbeya", "Morogoro", "Mtwara", "Mwanza", "Njombe", "Pemba North", "Pemba South", "Pwani", "Rukwa", "Ruvuma", "Shinyanga", "Simiyu", "Singida", "Tabora", "Tanga", "Zanzibar Central/South", "Zanzibar North", "Zanzibar Urban/West"],  
+
+    "Togo": ["Kara", "Plateaux", "Savanes", "Centrale", "Maritime"],  
+
+    "Tunisia": ["Ariana", "Béja", "Ben Arous", "Bizerte", "Gabès", "Gafsa", "Jendouba", "Kairouan", "Kasserine", "Kebili", "La Manouba", "Le Kef", "Mahdia", "Medenine", "Monastir", "Nabeul", "Sfax", "Sidi Bouzid", "Siliana", "Sousse", "Tataouine", "Tozeur", "Tunis", "Zaghouan"],  
+
+    "Uganda": ["Central", "Eastern", "Northern", "Western"],  
+
+    "Zambia": ["Central", "Copperbelt", "Eastern", "Luapula", "Lusaka", "Muchinga", "Northern", "North-Western", "Southern", "Western"]   
+};
+
+
+
+        const countrySelect = document.getElementById("adminCountry");
+        const stateSelect = document.getElementById("adminState");
+
+        for (let country in africanCountries) {
+            let option = document.createElement("option");
+            option.value = country;
+            option.textContent = country;
+            countrySelect.appendChild(option);
+        }
+
+        countrySelect.addEventListener("change", function () {
+            let states = africanCountries[this.value] || [];
+            stateSelect.innerHTML = "<option value=''>Select State</option>";
+            states.forEach(state => {
+                let option = document.createElement("option");
+                option.value = state;
+                option.textContent = state;
+                stateSelect.appendChild(option);
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+    checkAdminLogin();
+    loadLeaders();
+});
+
+// Check if admin is logged in
+function checkAdminLogin() {
+    let adminData = JSON.parse(localStorage.getItem("adminData"));
+    if (!adminData || !adminData.loggedIn) {
+        alert("Unauthorized access! Please log in as an admin.");
+        window.location.href = "admin-register.html";
+    }
+}
+
+// Load leaders from localStorage
+function loadLeaders() {
+    let leaders = JSON.parse(localStorage.getItem("leaders")) || [];
+    let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
+
+    // Ensure each leader has a valid profile photo or fallback to default
+    leaders = leaders.map(leader => ({
+        ...leader,
+        profileImage: leader.profileImage ? leader.profileImage : "default-profile.png"
+    }));
+
+    approvedLeaders = approvedLeaders.map(leader => ({
+        ...leader,
+        profileImage: leader.profileImage ? leader.profileImage : "default-profile.png"
+    }));
+
+    displayLeaders(leaders, approvedLeaders);
+}
+
+// Approve a leader (Moves from 'leaders' to 'approvedLeaders')
+function approveLeader(index) {
+    let leaders = JSON.parse(localStorage.getItem("leaders")) || [];
+    let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
+
+    // Move the selected leader to the approved list
+    let leader = leaders.splice(index, 1)[0]; 
+    approvedLeaders.push(leader); 
+
+    // Save changes to localStorage
+    localStorage.setItem("leaders", JSON.stringify(leaders));
+    localStorage.setItem("approvedLeaders", JSON.stringify(approvedLeaders));
+
+    // Reload leaders to update display
+    loadLeaders();
+}
+
+// Display pending and approved leaders
+function displayLeaders(pendingLeaders, approvedLeaders) {
+    const pendingDiv = document.getElementById("pendingLeaders");
+    const approvedDiv = document.getElementById("approvedLeaders");
+
+    pendingDiv.innerHTML = "";
+    approvedDiv.innerHTML = "";
+
+    // Display Pending Leaders
+    pendingLeaders.forEach((leader, index) => {
+        pendingDiv.innerHTML += `
+            <div class="leader-item">
+                <img src="${leader.profileImage}" 
+                     alt="${leader.name}" class="leader-photo">
+                <h3>${leader.name} (${leader.title})</h3>
+                <p>📍 ${leader.country}, ${leader.state}</p>
+                <p>📧 ${leader.email}</p>
+                <p>📞 ${leader.phone}</p>
+                <button class="approve-btn" onclick="approveLeader(${index})">✅ Approve</button>
+                <button class="delete-btn" onclick="deleteLeader(${index}, 'pending')">❌ Delete</button>
+            </div>`;
+    });
+
+    // Display Approved Leaders
+    approvedLeaders.forEach((leader, index) => {
+        approvedDiv.innerHTML += `
+            <div class="leader-item">
+                <img src="${leader.profileImage}" 
+                     alt="${leader.name}" class="leader-photo" id="leaderPhoto${index}">
+                <h3>${leader.name} (${leader.title})</h3>
+                <p>📍 ${leader.country}, ${leader.state}</p>
+                <p>📧 ${leader.email}</p>
+                <p>📞 ${leader.phone}</p>
+                <input type="file" id="photoUpload${index}" class="photo-upload" accept="image/*" 
+                       onchange="updateLeaderPhoto(event, ${index})">
+                <button class="edit-btn" onclick="editLeader(${index})">✏️ Edit</button>
+                <button class="delete-btn" onclick="deleteLeader(${index}, 'approved')">❌ Delete</button>
+            </div>`;
+    });
+}
+
+// Function to update leader photo
+function updateLeaderPhoto(event, index) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
+            approvedLeaders[index].profileImage = e.target.result; // Save new photo
+            localStorage.setItem("approvedLeaders", JSON.stringify(approvedLeaders));
+            document.getElementById(`leaderPhoto${index}`).src = e.target.result; // Update UI
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Delete leader from pending or approved list
+function deleteLeader(index, type) {
+    let leaders = JSON.parse(localStorage.getItem("leaders")) || [];
+    let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
+
+    if (type === 'pending') {
+        leaders.splice(index, 1);
+        localStorage.setItem("leaders", JSON.stringify(leaders));
+    } else {
+        approvedLeaders.splice(index, 1);
+        localStorage.setItem("approvedLeaders", JSON.stringify(approvedLeaders));
+    }
+
+    // Reload leaders after deletion
+    loadLeaders();
+}
+
+// Load leaders on page load
+loadLeaders();
+
+
+// Edit a leader's details (Now includes photo update)
+function editLeader(index) {
+    let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
+    let leader = approvedLeaders[index];
+
+    let newName = prompt("Enter new name:", leader.name);
+    let newCountry = prompt("Enter new country:", leader.country);
+    let newState = prompt("Enter new state:", leader.state);
+    let newTitle = prompt("Enter new title:", leader.title);
+    let newEmail = prompt("Enter new email:", leader.email);
+    let newPhone = prompt("Enter new phone number:", leader.phone);
+
+    if (newName && newCountry && newState && newTitle && newEmail && newPhone) {
+        approvedLeaders[index] = {
+            name: newName,
+            country: newCountry,
+            state: newState,
+            title: newTitle,
+            email: newEmail,
+            phone: newPhone,
+            photo: leader.photo // Keep existing photo if not updated
+        };
+        localStorage.setItem("approvedLeaders", JSON.stringify(approvedLeaders));
+        displayLeaders(JSON.parse(localStorage.getItem("leaders")) || [], approvedLeaders);
+    } else {
+        alert("All fields are required!");
+    }
+}
+
+// Delete a leader
+function deleteLeader(index, type) {
+    let leaders = JSON.parse(localStorage.getItem("leaders")) || [];
+    let approvedLeaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
+
+    if (type === "pending") {
+        leaders.splice(index, 1);
+        localStorage.setItem("leaders", JSON.stringify(leaders));
+    } else {
+        approvedLeaders.splice(index, 1);
+        localStorage.setItem("approvedLeaders", JSON.stringify(approvedLeaders));
+    }
+
+    displayLeaders(leaders, approvedLeaders);
+}
+
+// Logout admin
+function logoutAdmin() {
+    let adminData = JSON.parse(localStorage.getItem("adminData"));
+    if (adminData) {
+        adminData.loggedIn = false;
+        localStorage.setItem("adminData", JSON.stringify(adminData));
+    }
+    alert("Logged out successfully!");
+    window.location.href = "admin-register.html";
+}
+
+// Function to Load Admin Dashboard Data
+function loadAdminDashboard() {
+    const leaders = JSON.parse(localStorage.getItem("approvedLeaders")) || [];
+    let storedAdmin = localStorage.getItem("adminData");
+
+    // Update statistics
+    document.getElementById("totalLeaders").innerText = leaders.length;
+
+    // Check if admin data exists
+    if (!storedAdmin) {
+        alert("No admin registered. Please register first.");
+        document.getElementById("totalAdmins").innerText = "0"; // Set admin count to 0
+        return;
+    }
+
+    storedAdmin = JSON.parse(storedAdmin);
+
+    // Ensure only one admin login is allowed
+    if (!storedAdmin.loggedIn) {
+        alert("No admin is logged in.");
+        window.location.href = "login.html"; // Redirect if no admin is logged in
+        return;
+    }
+
+    document.getElementById("totalAdmins").innerText = "1"; // Always 1 logged-in admin
+
+    // Ensure the registered date exists
+    if (!storedAdmin.registeredDate) {
+        storedAdmin.registeredDate = new Date().toISOString().split('T')[0]; // Set if missing
+        localStorage.setItem("adminData", JSON.stringify(storedAdmin)); // Save update
+    }
+
+    // Populate the Leaders Table
+    const leadersTable = document.querySelector("#leadersTable tbody");
+    if (leadersTable) {
+        leadersTable.innerHTML = "";
+
+        leaders.forEach(leader => {
+            const status = navigator.onLine ? "🟢 Online" : "🔴 Offline";
+            const whatsappLink = `https://wa.me/${leader.phone.replace(/\D/g, '')}`;
+
+            const row = `
+                <tr>
+                    <td><img src="${leader.profileImage || 'default-profile.png'}" class="profile-pic"></td>
+                    <td>${leader.name}</td>
+                    <td>${leader.title}</td>
+                    <td>${leader.country}</td>
+                    <td>${leader.state}</td>
+                    <td>${leader.email}</td>
+                    <td><a href="${whatsappLink}" target="_blank">${leader.phone} 📲</a></td>
+                    <td>${leader.registeredDate || 'N/A'}</td>
+                    <td>${status}</td>
+                </tr>
+            `;
+
+            leadersTable.innerHTML += row;
+        });
+    }
+
+    // Populate the Admins Table
+    const adminsTable = document.querySelector("#adminsTable tbody");
+    if (adminsTable) {
+        adminsTable.innerHTML = ""; // Clear previous content
+
+        const adminRow = `
+            <tr>
+               
+                <td>${storedAdmin.name || storedAdmin.username || "Admin"}</td>  
+                <td>${storedAdmin.email}</td>
+                <td>${storedAdmin.registeredDate || 'N/A'}</td>  
+                <td>🟢 Active</td>
+            </tr>
+        `;
+
+        adminsTable.innerHTML += adminRow;
+    }
+}
+
+// Ensure Admin Data Loads on Page Load
+document.addEventListener("DOMContentLoaded", loadAdminDashboard);
+
+    </script>
+
+</body>
+</html>
+
+    
+
+    
+
+
+
