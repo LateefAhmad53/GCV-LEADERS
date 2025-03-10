@@ -193,21 +193,8 @@
     }
 </style>
 
-<script>
-    function verifyCode() {
-        let inputCode = document.getElementById("secretCode").value;
-        let overlay = document.getElementById("adminOverlay");
 
-        if (inputCode === "9299") {
-            overlay.style.display = "none"; // Hide overlay to unlock the page
-        } else {
-            let inputBox = document.getElementById("secretCode");
-            inputBox.value = ""; // Clear input
-            inputBox.classList.add("error"); // Add shake animation
-            setTimeout(() => inputBox.classList.remove("error"), 500);
-        }
-    }
-</script>
+
 
     <div class="container">
         <h2 id="formTitle">Admin Registration</h2>
@@ -232,14 +219,29 @@
         <!-- Logout Button (Hidden by Default) -->
         <button class="logout-btn" id="logoutBtn" style="display:none;" onclick="logoutAdmin()">Logout</button>
     </div>
+    <script>
+    function verifyCode() {
+        let inputCode = document.getElementById("secretCode").value;
+        let overlay = document.getElementById("adminOverlay");
 
-    <script type="module">
+        if (inputCode === "9299") {
+            overlay.style.display = "none"; // Hide overlay to unlock the page
+        } else {
+            let inputBox = document.getElementById("secretCode");
+            inputBox.value = ""; // Clear input
+            inputBox.classList.add("error"); // Add shake animation
+            setTimeout(() => inputBox.classList.remove("error"), 500);
+        }
+    }
+</script>
+
+<script type="module">
     // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js";
 
-    // Firebase Configuration (Your Provided Config)
+    // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyDFNAifDyYbmSqr98kr1Yg8CZ2hrpem8zY",
         authDomain: "gcv-leaders.firebaseapp.com",
@@ -272,9 +274,13 @@
         }
 
         try {
+            console.log("Registering admin...");
+
             // Register admin with Firebase Authentication
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+
+            console.log("Admin created in Auth:", user.uid);
 
             // Store admin details in Firestore
             await setDoc(doc(db, "admins", user.uid), {
@@ -284,10 +290,13 @@
                 registeredDate: new Date().toISOString().split('T')[0]
             });
 
-            alert("Admin registered successfully! You can now log in.");
-            toggleForms();
+            console.log("Admin details saved in Firestore.");
+
+            alert("Admin registered successfully! Redirecting to login...");
+            window.location.href = "adminlogin.html";  // ✅ Redirect after successful registration
         } catch (error) {
             alert("Registration failed: " + error.message);
+            console.error("Error:", error);
         }
     }
 
@@ -296,22 +305,32 @@
         const email = document.getElementById("adminLoginEmail").value.trim();
         const password = document.getElementById("adminLoginPassword").value;
 
+        if (!email || !password) {
+            alert("Please enter email and password.");
+            return;
+        }
+
         try {
+            console.log("Logging in admin...");
+
             // Sign in admin using Firebase Authentication
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+
+            console.log("Admin authenticated:", user.uid);
 
             // Retrieve admin details from Firestore
             const adminDoc = await getDoc(doc(db, "admins", user.uid));
             if (adminDoc.exists()) {
                 sessionStorage.setItem("loggedInAdmin", JSON.stringify(adminDoc.data()));
-                alert("Login successful!");
-                window.location.href = "admin.html";
+                alert("Login successful! Redirecting...");
+                window.location.href = "admin.html";  // ✅ Redirect to admin dashboard
             } else {
                 alert("Admin details not found. Contact support.");
             }
         } catch (error) {
             alert("Login failed: " + error.message);
+            console.error("Error:", error);
         }
     }
 
